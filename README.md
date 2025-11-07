@@ -76,5 +76,5 @@ A reproducible, deployed dashboard backed by a transparent, explainable CNN mode
 
 ---
 
-Would you like me to draft a **README header section** next (title + badges + abstract + tech stack + “quick start” instructions) so your repo lands strong visually when visitors open it?
+
 

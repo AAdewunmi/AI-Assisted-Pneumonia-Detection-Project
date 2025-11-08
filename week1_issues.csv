@@ -1,4 +1,4 @@
-﻿"Title,Body,Labels,Milestone"
+"Title,Body,Labels,Milestone"
 "Set up project repository,""Create new repo **pneumodetect** with standard folder structure, .gitignore, README.md, and requirements.txt. Ensure virtual environment setup instructions are clear."",setup,Week 1"
 "Create virtual environment and install dependencies,""Set up Python 3.11 venv or Conda environment. Install torch, torchvision, pandas, numpy, matplotlib, scikit-learn, Flask, pytest. Verify import success."",setup,Week 1"
 "Explore dataset structure and metadata,""Load RSNA/NIH dataset subset into notebook **01_eda_preprocessing.ipynb**. Inspect columns, image paths, and class distribution."",data,Week 1"

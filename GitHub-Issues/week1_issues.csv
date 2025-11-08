@@ -10,3 +10,4 @@
 "Evaluate baseline model performance,""In **02_train_resnet50.ipynb**, load saved weights, compute confusion matrix, ROC, precision-recall. Plot metrics."",evaluation,Week 1"
 "Document Week 1 results and reflections,""Write **docs/week1_summary.md** summarising dataset, preprocessing, baseline metrics, and initial observations."",documentation,Week 1"
 "Commit and push all Week 1 artifacts,""Ensure all scripts, notebooks, tests, and reports are version-controlled and pushed to GitHub main branch."",workflow,Week 1"
+"Refactor data loading pipeline to optimize performance,""Revise **src/data_loader.py** to implement efficient data loading with caching and prefetching. Benchmark load times before and after changes."",data_pipeline,Week 3"

@@ -1,0 +1,18 @@
+﻿Title,Body,Labels,Milestone
+Design Flask app structure,"Set up **/app/** directory with `app.py`, `templates/`, and `static/` folders. Configure Flask routes and environment variables for local testing.",flask,Week 3
+Implement file upload route,"Add `/upload` endpoint to accept JPG/PNG X-ray images. Save uploaded files temporarily in **/app/static/uploads/**.",flask,Week 3
+Integrate trained model for inference,"Load saved ResNet-50 weights inside Flask. Ensure preprocessing matches training pipeline and returns probability predictions.",model,Week 3
+Add threshold-based decision logic,"Implement threshold slider in frontend and backend logic to classify pneumonia risk (High/Low). Include JSON response for decision badge.",logic,Week 3
+Implement Grad-CAM overlay generation in Flask,"Connect Grad-CAM module to app inference. Return overlay images for uploaded X-rays and display alongside original.",explainability,Week 3
+Build clinician dashboard layout,"Develop **templates/dashboard.html** with Bootstrap grid layout. Display: Original image | Grad-CAM overlay | Probability bar chart | Metrics widgets.",frontend,Week 3
+Add Chart.js for live probability visualization,"Integrate Chart.js to plot class probabilities dynamically when threshold changes. Update decision badge accordingly.",frontend,Week 3
+Implement sidebar controls,"Create sidebar with image upload, model selector, threshold slider, and explainability toggle using Bootstrap components.",frontend,Week 3
+Add safe-use disclaimer banner,"Display disclaimer banner at bottom: 'For research use only – not a diagnostic device.' Ensure it’s always visible in UI.",frontend,Week 3
+Test end-to-end inference flow,"Upload test image via dashboard, confirm model output, Grad-CAM overlay, and metrics update correctly. Fix preprocessing or routing issues.",testing,Week 3
+Add unit tests for Flask endpoints,"Create **tests/test_app.py** to test `/upload` and `/predict` routes, ensuring valid JSON responses and image outputs.",testing,Week 3
+Prepare demo README and usage guide,"Write instructions in **README.md** for running the Flask dashboard locally (setup, run, access). Include demo GIFs or screenshots.",documentation,Week 3
+Commit and push all Week 3 artifacts,"Version-control Flask app, templates, static assets, and test files. Push branch updates to main and verify CI passes.",workflow,Week 3
+Refactor data loading pipeline to optimize performance,"Revise **src/data_loader.py** to implement efficient data loading with caching and prefetching. Benchmark load times before and after changes.",data_pipeline,Week 3
+Optimize model inference speed,"Profile model prediction time in **src/inference.py**. Implement batch processing or ONNX conversion if needed to reduce latency.",model,Week 3
+Enhance Grad-CAM resolution and clarity,"Improve heatmap generation in **src/gradcam.py** for higher resolution overlays. Experiment with different layers or smoothing techniques.",explainability,Week 3
+Conduct user testing with clinicians,"Gather feedback from medical professionals on dashboard usability, clarity of explanations,

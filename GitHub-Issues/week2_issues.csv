@@ -11,3 +11,5 @@ Document model interpretability findings in week2_summary.md,"Summarize Grad-CAM
 Add unit tests for Grad-CAM output dimensions and heatmap generation,"Implement **tests/test_gradcam.py** to verify heatmap tensor shapes and ensure valid activation maps are generated.",testing,Week 2
 Commit and push all Week 2 artifacts,"Ensure all updated notebooks, scripts, reports, and Grad-CAM images are version-controlled and pushed to the main branch.",workflow,Week 2
 Refactor data loading pipeline to optimize performance,"Revise **src/data_loader.py** to implement efficient data loading with caching and prefetching. Benchmark load times before and after changes.",data_pipeline,Week 3
+Integrate advanced data augmentation techniques,"Incorporate augmentations like CutMix and MixUp in **src/data_loader.py**. Evaluate their impact on model robustness during training.",data-processing,Week 2
+Evaluate augmented model performance,"Retrain model with new augmentations and compare metrics (AUC,

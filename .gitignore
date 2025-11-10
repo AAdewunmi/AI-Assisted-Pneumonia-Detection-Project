@@ -1,0 +1,69 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Virtual environments
+.env
+.venv/
+env/
+venv/
+ENV/
+env.bak/
+env.old/
+*.conda
+
+# Conda environment files
+*.yml
+
+# PyTorch / TensorFlow checkpoints
+*.ckpt
+*.pt
+*.pth
+checkpoints/
+saved_models/
+
+# Data and large assets
+data/
+datasets/
+*.csv
+*.h5
+*.zip
+*.tar
+*.gz
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Flask cache and uploads
+instance/
+uploads/
+app/static/uploads/
+app/static/overlays/
+
+# Logs
+logs/
+*.log
+
+# IDE and OS junk
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Test and coverage files
+.coverage
+htmlcov/
+.pytest_cache/
+.tox/
+nosetests.xml
+junit.xml
+
+# Build / distribution artifacts
+build/
+dist/
+*.egg-info/

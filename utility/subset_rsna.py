@@ -5,7 +5,14 @@ Create a manageable (~2 GB) subset of the RSNA Pneumonia Detection dataset.
 It copies ~2000 random images and their matching labels into a new folder.
 
 Usage:
+    conda activate pneumodetect
     python scripts/subset_rsna.py --src data/rsna --dst data/rsna_subset --n 2000
+
+This will:
+
+    Copy ~2000 random .dcm files into data/rsna_subset/train_images/
+    Create data/rsna_subset/train_labels_subset.csv with matching labels.
+    Print summary info (counts, estimated size)
 """
 
 import argparse
@@ -47,3 +54,19 @@ def create_subset(src_dir: Path, dst_dir: Path, n: int = 2000):
 
     print(f"Subset complete: {len(df_subset)} records written to {dst_labels}")
     print(f"Images saved in: {dst_images.resolve()}")
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(description="Create RSNA subset")
+    parser.add_argument("--src", type=Path, default=Path("data/rsna"),
+                        help="Source RSNA dataset folder")
+    parser.add_argument("--dst", type=Path, default=Path("data/rsna_subset"),
+                        help="Destination subset folder")
+    parser.add_argument("--n", type=int, default=2000,
+                        help="Number of images to sample (~2 GB)")
+    return parser.parse_args()
+
+
+if __name__ == "__main__":
+    args = parse_args()
+    create_subset(args.src, args.dst, args.n)

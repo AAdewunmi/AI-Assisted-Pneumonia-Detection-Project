@@ -67,3 +67,7 @@ junit.xml
 build/
 dist/
 *.egg-info/
+
+# Kaggle specific
+kaggle.json
+.kaggle/

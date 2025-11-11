@@ -32,3 +32,24 @@ def setup_test_data(tmp_path):
     })
     df.to_csv(src_labels, index=False)
     return src_dir
+
+
+def test_create_subset(tmp_path):
+    """Test subset creation logic."""
+    src_dir = setup_test_data(tmp_path)
+    dst_dir = tmp_path / "subset"
+
+    # Create subset of 5 images
+    create_subset(src_dir, dst_dir, n=5)
+
+    subset_imgs = list((dst_dir / "train_images").glob("*.dcm"))
+    subset_csv = dst_dir / "train_labels_subset.csv"
+
+    # Assertions
+    assert subset_csv.exists(), "Subset CSV not created"
+    assert len(subset_imgs) == 5, "Incorrect number of images copied"
+
+    df_subset = pd.read_csv(subset_csv)
+    assert len(df_subset) <= 5, "Subset CSV contains extra rows"
+    assert all(df_subset["patientId"].isin([f.stem for f in subset_imgs])), \
+        "CSV entries don't match copied images"

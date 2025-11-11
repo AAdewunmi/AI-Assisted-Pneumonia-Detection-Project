@@ -53,3 +53,8 @@ def test_create_subset(tmp_path):
     assert len(df_subset) <= 5, "Subset CSV contains extra rows"
     assert all(df_subset["patientId"].isin([f.stem for f in subset_imgs])), \
         "CSV entries don't match copied images"
+    
+       
+def teardown_module(module):
+    """Cleanup temporary test folders if needed."""
+    shutil.rmtree("tests/tmp", ignore_errors=True)

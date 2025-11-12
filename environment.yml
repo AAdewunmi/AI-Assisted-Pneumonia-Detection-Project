@@ -1,48 +1,11 @@
-name: pneumodetect
+name: AI-Assisted-Pneumonia-Detection-Project
 channels:
-  - pytorch
-  - conda-forge
   - defaults
-
 dependencies:
-  # Core
   - python=3.11
-  - pip
-  - numpy=1.26.4
-  - pandas=2.2.3
-  - scikit-learn=1.5.2
-  - matplotlib=3.9.2
-  - seaborn=0.13.2
-  - tqdm=4.66.5
-
-  # Deep Learning
-  - pytorch=2.4.1
-  - torchvision=0.19.1
-  - cpuonly  # Remove this line if you have GPU CUDA support
-
-  # Image & Medical Imaging
-  - opencv=4.10.0
-  - pillow=10.4.0
-  - pydicom=2.4.4
-
-  # Web / App Framework
-  - flask=3.0.3
-  - jinja2=3.1.4
-  - werkzeug=3.0.4
-  - itsdangerous=2.2.0
-  - flask-cors=5.0.0
-
-  # Testing & CI/CD
-  - pytest=8.3.3
-  - pytest-cov=5.0.0
-  - requests=2.32.3
-
-  # Utilities
-  - python-dotenv=1.0.1
-
-  # Add pip-only packages
-  - pip:
-      - grad-cam==1.5.0
-      - gunicorn==23.0.0
-      - docker==7.1.0
-      - chart-studio==1.1.0
+  - pytest-cov
+  - pytest
+  - pandas
+  - seaborn
+  - matplotlib
+prefix: /opt/miniconda3/envs/AI-Assisted-Pneumonia-Detection-Project

@@ -8,4 +8,6 @@ dependencies:
   - pandas
   - seaborn
   - matplotlib
+  - opencv
+  - pydicom
 prefix: /opt/miniconda3/envs/AI-Assisted-Pneumonia-Detection-Project

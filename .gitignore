@@ -17,7 +17,7 @@ env.old/
 *.conda
 
 # Conda environment files
-*.yml
+#*.yml
 
 # PyTorch / TensorFlow checkpoints
 *.ckpt

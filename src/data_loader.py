@@ -11,6 +11,7 @@ import pandas as pd
 import cv2
 import torch
 from torch.utils.data import Dataset
+from torch.utils.data import DataLoader
 
 
 class PneumoniaDataset(Dataset):
@@ -35,7 +36,7 @@ class PneumoniaDataset(Dataset):
         if not self.img_dir.exists():
             raise FileNotFoundError(f"Image directory not found: {self.img_dir}")
 
-        print(f"✅ Loaded {len(self.data)} records from {self.csv_path}")
+        print(f" Loaded {len(self.data)} records from {self.csv_path}")
 
     def __len__(self):
         return len(self.data)
@@ -70,3 +71,13 @@ class PneumoniaDataset(Dataset):
             img = self.transform(img)
 
         return img, label
+
+
+def get_data_loader(csv_path, img_dir, transform=None, batch_size=8, shuffle=True):
+    """
+    Convenience function for tests — returns a DataLoader for PneumoniaDataset.
+    Skips missing images gracefully.
+    """
+    from src.train import collate_skip_none  # lazy import to avoid circular dependency
+    dataset = PneumoniaDataset(csv_path, img_dir, transform=transform)
+    return DataLoader(dataset, batch_size=batch_size, shuffle=shuffle, collate_fn=collate_skip_none)

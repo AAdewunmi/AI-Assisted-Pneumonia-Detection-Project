@@ -9,8 +9,8 @@ Performs:
 """
 
 from pathlib import Path
-from touch.utils.data import DataLoader, Dataset
-from touchvision import transforms
+from torch.utils.data import DataLoader, Dataset
+from torchvision import transforms
 from PIL import Image
 import pandas as pd
 import torch

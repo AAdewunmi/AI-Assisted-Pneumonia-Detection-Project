@@ -10,4 +10,7 @@ dependencies:
   - matplotlib
   - opencv
   - pydicom
+  - torchvision
+  - pytorch
+  - torchaudio
 prefix: /opt/miniconda3/envs/AI-Assisted-Pneumonia-Detection-Project

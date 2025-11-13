@@ -71,3 +71,6 @@ dist/
 # Kaggle specific
 kaggle.json
 .kaggle/
+
+# Ignore training log file
+training_log.csv

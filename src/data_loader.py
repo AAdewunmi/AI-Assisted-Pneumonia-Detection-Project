@@ -60,3 +60,23 @@ class PneumoniaDataset(Dataset):
             img = self.transform(img)
 
         return img, label
+
+
+def get_data_loader(csv_path, img_dir, batch_size=8, num_workers=0):
+    """
+    Returns a DataLoader with preprocessing and augmentation applied.
+    """
+    transform = transforms.Compose([
+        transforms.Resize((224, 224)),
+        transforms.RandomHorizontalFlip(p=0.5),
+        transforms.RandomRotation(degrees=10),
+        transforms.ColorJitter(brightness=0.2, contrast=0.2),
+        transforms.ToTensor(),
+        transforms.Normalize(
+            mean=[0.485, 0.456, 0.406],  # ImageNet normalization
+            std=[0.229, 0.224, 0.225]
+        ),
+    ])
+
+    dataset = PneumoniaDataset(csv_path, img_dir, transform=transform)
+    return DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=num_workers)

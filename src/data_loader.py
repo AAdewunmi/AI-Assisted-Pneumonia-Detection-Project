@@ -33,4 +33,30 @@ class PneumoniaDataset(Dataset):
     def __len__(self):
         return len(self.data)
 
-    
+    def __getitem__(self, idx):
+        row = self.data.iloc[idx]
+        pid = str(row["patientId"])
+        label = torch.tensor(int(row["Target"]), dtype=torch.long)
+
+        # Look for matching file
+        img_path = None
+        for ext in [".png", ".jpg", ".jpeg", ".dcm"]:
+            candidate = self.img_dir / f"{pid}{ext}"
+            if candidate.exists():
+                img_path = candidate
+                break
+
+        if img_path is None:
+            raise FileNotFoundError(f"No image found for ID: {pid}")
+
+        # Convert to RGB
+        if img_path.suffix.lower() == ".dcm":
+            import pydicom
+            img = Image.fromarray(pydicom.dcmread(str(img_path)).pixel_array).convert("RGB")
+        else:
+            img = Image.open(img_path).convert("RGB")
+
+        if self.transform:
+            img = self.transform(img)
+
+        return img, label

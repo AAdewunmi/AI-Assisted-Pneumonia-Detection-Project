@@ -79,6 +79,6 @@ def train_baseline(csv_path: str, img_dir: str, epochs: int = 5, batch_size: int
 
 
 if __name__ == "__main__":
-    csv_path = "data/rsna_subset/train_labels_subset.csv"
+    csv_path = "data/rsna_subset/stage_2_train_labels.csv"
     img_dir = "data/rsna_subset/train_images"
     train_baseline(csv_path, img_dir, epochs=3, batch_size=8)

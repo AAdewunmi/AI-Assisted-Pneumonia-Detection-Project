@@ -35,31 +35,31 @@ class PneumoniaDataset(Dataset):
 
     def __getitem__(self, idx):
         row = self.data.iloc[idx]
-        pid = str(row["patientId"])
-        label = torch.tensor(int(row["Target"]), dtype=torch.long)
+        pid = row['patientId']
+        label = int(row['Target'])
+        img_path_dcm = self.img_dir / f"{pid}.dcm"
+        img_path_png = self.img_dir / f"{pid}.png"
 
-        # Look for matching file
-        img_path = None
-        for ext in [".png", ".jpg", ".jpeg", ".dcm"]:
-            candidate = self.img_dir / f"{pid}{ext}"
-            if candidate.exists():
-                img_path = candidate
-                break
+        # Gracefully skip missing files
+        if not img_path_dcm.exists() and not img_path_png.exists():
+            # Skip bad samples
+            return None
 
-        if img_path is None:
-            raise FileNotFoundError(f"No image found for ID: {pid}")
-
-        # Convert to RGB
-        if img_path.suffix.lower() == ".dcm":
+        try:
             import pydicom
-            img = Image.fromarray(pydicom.dcmread(str(img_path)).pixel_array).convert("RGB")
-        else:
-            img = Image.open(img_path).convert("RGB")
+            if img_path_dcm.exists():
+                img = pydicom.dcmread(img_path_dcm).pixel_array
+            else:
+                img = cv2.imread(str(img_path_png), cv2.IMREAD_GRAYSCALE)
+        except Exception as e:
+            print(f"Failed to load {pid}: {e}")
+            return None
 
+        img = np.stack([img] * 3, axis=-1)  # make 3 channels
         if self.transform:
             img = self.transform(img)
-
         return img, label
+
 
 
 def get_data_loader(csv_path, img_dir, batch_size=8, num_workers=0):

@@ -13,4 +13,5 @@ dependencies:
   - torchvision
   - pytorch
   - torchaudio
+  - scikit-learn
 prefix: /opt/miniconda3/envs/AI-Assisted-Pneumonia-Detection-Project

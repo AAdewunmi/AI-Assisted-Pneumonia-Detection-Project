@@ -19,3 +19,12 @@ def setup_fake_labels(tmp_path):
     csv_path = tmp_path / "labels.csv"
     df.to_csv(csv_path, index=False)
     return csv_path
+
+
+def test_class_weights_computation(tmp_path):
+    """Ensure get_class_weights() returns expected inverse ratios."""
+    csv_path = setup_fake_labels(tmp_path)
+    weights = get_class_weights(csv_path)
+    assert isinstance(weights, dict)
+    assert 0 in weights and 1 in weights
+    assert weights[1] > weights[0], "Minority class should have higher weight"

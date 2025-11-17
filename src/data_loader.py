@@ -1,61 +1,44 @@
 """
-Data loading utilities for PneumoDetect.
-Includes support for:
-- Automatic filtering of missing image files
-- WeightedRandomSampler for class balancing
-- Default transforms for model compatibility
-- Test-safe fallback when no real images are present
+Data loading utilities for PneumoDetect — supports balanced sampling and fallback for synthetic tests.
 """
 
-from pathlib import Path
-import numpy as np
-import pandas as pd
-from PIL import Image
 import torch
 from torch.utils.data import Dataset, DataLoader, WeightedRandomSampler
 from torchvision import transforms
+from pathlib import Path
+import pandas as pd
+from PIL import Image
+import numpy as np
+import random
 
 
 def get_default_transform():
-    """
-    Return standard preprocessing transform:
-    - Convert to tensor
-    - Resize to 224x224
-    - Normalize to ImageNet mean/std
-    """
+    """Return a standard transform pipeline (resize, normalize)."""
     return transforms.Compose([
         transforms.ToTensor(),
         transforms.Resize((224, 224)),
         transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                             std=[0.229, 0.224, 0.225]),
+                             std=[0.229, 0.224, 0.225])
     ])
 
 
 class PneumoniaDataset(Dataset):
-    """Dataset for loading chest X-ray images and pneumonia labels."""
+    """Dataset for chest X-ray images and pneumonia labels."""
 
     def __init__(self, csv_path, img_dir, transform=None):
         self.csv_path = Path(csv_path)
         self.img_dir = Path(img_dir)
         self.transform = transform or get_default_transform()
 
-        # Load label data
         self.data = pd.read_csv(self.csv_path)
-        if not self.img_dir.exists():
-            print(f"Warning: image directory not found ({self.img_dir}). Skipping filtering.")
-        else:
-            # Filter out entries without image files
-            valid_ids = [
-                pid for pid in self.data["patientId"]
-                if any((self.img_dir / f"{pid}{ext}").exists() for ext in [".dcm", ".png", ".jpg"])
-            ]
 
-            # Fallback for CI/test mode (no images)
-            if len(valid_ids) == 0:
-                print("No matching images found; keeping all rows for synthetic/testing mode.")
-            else:
-                self.data = self.data[self.data["patientId"].isin(valid_ids)].reset_index(drop=True)
-                print(f"Filtered to {len(self.data)} records with existing images.")
+        if not self.img_dir.exists():
+            print("No matching images found; keeping all rows for synthetic/testing mode.")
+        else:
+            existing_files = set(f.stem for f in self.img_dir.glob("*"))
+            self.data = self.data[self.data["patientId"].isin(existing_files)]
+            if len(self.data) == 0:
+                print("No image matches — using all rows for synthetic tests.")
 
         print(f"Loaded {len(self.data)} records from {self.csv_path}")
 
@@ -63,19 +46,22 @@ class PneumoniaDataset(Dataset):
         return len(self.data)
 
     def __getitem__(self, idx):
+        """Return image tensor and label. Uses dummy tensor if image not found (synthetic test)."""
         row = self.data.iloc[idx]
         pid = row["patientId"]
         label = int(row["Target"])
 
-        # Try to find image file
+        # Look for image file
+        img_path = None
         for ext in [".dcm", ".png", ".jpg"]:
-            img_path = self.img_dir / f"{pid}{ext}"
-            if img_path.exists():
+            path_candidate = self.img_dir / f"{pid}{ext}"
+            if path_candidate.exists():
+                img_path = path_candidate
                 break
-        else:
-            # For CI/testing: return a dummy tensor
-            dummy = torch.zeros((3, 224, 224))
-            return dummy, label
+
+        if img_path is None:
+            # Synthetic/fake data mode: return dummy image
+            return torch.zeros((3, 224, 224)), label
 
         try:
             import pydicom
@@ -90,49 +76,36 @@ class PneumoniaDataset(Dataset):
 
 
 def get_class_weights(csv_path):
-    """
-    Compute inverse frequency weights for each class.
-    Used by WeightedRandomSampler to balance the dataset.
-    """
+    """Compute inverse frequency weights per class."""
     df = pd.read_csv(csv_path)
     counts = df["Target"].value_counts().to_dict()
-    total = sum(counts.values())
-    weights = {cls: total / count for cls, count in counts.items()}
+    weights = {cls: 1.0 / count for cls, count in counts.items()}
     print(f"Class counts: {counts} | Weights: {weights}")
     return weights
 
 
-def get_balanced_loader(csv_path, img_dir, transform, batch_size=8):
-    """Return a DataLoader that balances classes using WeightedRandomSampler."""
-    dataset = PneumoniaDataset(csv_path, img_dir, transform)
+def get_balanced_loader(csv_path, img_dir, transform=None, batch_size=8):
+    """Balanced DataLoader using WeightedRandomSampler with smoothed weights."""
+    from src.train import collate_skip_none
+
+    dataset = PneumoniaDataset(csv_path, img_dir, transform or get_default_transform())
     df = pd.read_csv(csv_path)
 
-    # Compute weights inversely proportional to class frequency
     counts = df["Target"].value_counts().to_dict()
-    total = sum(counts.values())
-    inv_freq = {cls: total / (len(counts) * count) for cls, count in counts.items()}
+    weights = df["Target"].apply(lambda x: 1.0 / (counts[x] ** 0.7)).values
+    weights = torch.DoubleTensor(weights)
+    weights = weights / weights.sum() * len(weights)
 
-    # Assign sample weights and normalize
-    sample_weights = np.array([inv_freq[label] for label in df["Target"].values])
-    sample_weights /= sample_weights.sum()
-
-    sampler = WeightedRandomSampler(
-        weights=torch.DoubleTensor(sample_weights),
-        num_samples=len(sample_weights),
-        replacement=True,
-    )
-
-    print(f"Class counts: {counts} | Normalized weights: {inv_freq}")
-    loader = DataLoader(dataset, batch_size=batch_size, sampler=sampler)
+    sampler = WeightedRandomSampler(weights=weights, num_samples=len(weights), replacement=True)
+    print(f"Class counts: {counts} | Smoothed sample weights applied.")
+    loader = DataLoader(dataset, batch_size=batch_size, sampler=sampler, collate_fn=collate_skip_none)
     print("Balanced DataLoader ready.")
     return loader
 
 
 def get_data_loader(csv_path, img_dir, transform=None, batch_size=8, shuffle=True):
-    """
-    Standard DataLoader without balancing.
-    Used for evaluation and EDA notebooks.
-    """
+    """Standard unbalanced DataLoader (default)."""
     from src.train import collate_skip_none
-    dataset = PneumoniaDataset(csv_path, img_dir, transform)
+    dataset = PneumoniaDataset(csv_path, img_dir, transform or get_default_transform())
+    print("Standard DataLoader ready.")
     return DataLoader(dataset, batch_size=batch_size, shuffle=shuffle, collate_fn=collate_skip_none)

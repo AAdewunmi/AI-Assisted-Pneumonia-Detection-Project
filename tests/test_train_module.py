@@ -17,7 +17,7 @@ def test_loader_shapes(fake_dataset):
     assert imgs.shape == (4, 3, 224, 224)
 
 
-@patch("src.train.PneumoniaDataset")
+@patch("src.data_loader.PneumoniaDataset")
 def test_train_initialization(mock_dataset, tmp_path):
     mock_dataset.return_value.__len__.return_value = 4
     mock_dataset.return_value.__getitem__.side_effect = [

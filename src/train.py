@@ -97,7 +97,7 @@ def train_baseline(csv_path: str, img_dir: str, epochs: int = 3, batch_size: int
 
         epoch_loss = running_loss / len(loader)
         epoch_acc = correct / total
-        print(f"📊 Epoch {epoch+1}: Loss={epoch_loss:.4f}, Accuracy={epoch_acc:.4f}")
+        print(f"Epoch {epoch+1}: Loss={epoch_loss:.4f}, Accuracy={epoch_acc:.4f}")
 
         # Save metrics to log
         with open(log_path, "a", newline="") as f:
@@ -109,7 +109,7 @@ def train_baseline(csv_path: str, img_dir: str, epochs: int = 3, batch_size: int
             best_acc = epoch_acc
             best_path = save_dir / "resnet50_best.pt"
             torch.save(model.state_dict(), best_path)
-            print(f"💾 New best model saved (Accuracy={best_acc:.4f}) → {best_path}")
+            print(f"New best model saved (Accuracy={best_acc:.4f}) → {best_path}")
 
     # Save final model
     final_path = save_dir / "resnet50_baseline.pt"

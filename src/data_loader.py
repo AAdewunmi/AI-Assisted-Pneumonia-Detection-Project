@@ -32,10 +32,14 @@ class PneumoniaDataset(Dataset):
         self.transform = transform
         self.data = pd.read_csv(self.csv_path)
 
-        if not self.img_dir.exists():
-            raise FileNotFoundError(f"Image directory not found: {self.img_dir}")
+        # Filter rows to only those with available images
+        valid_ids = []
+        for pid in self.data["patientId"]:
+            if any((self.img_dir / f"{pid}{ext}").exists() for ext in [".dcm", ".png", ".jpg"]):
+                valid_ids.append(pid)
 
-        print(f"Loaded {len(self.data)} records from {self.csv_path}")
+        self.data = self.data[self.data["patientId"].isin(valid_ids)].reset_index(drop=True)
+        print(f"Filtered to {len(self.data)} records with existing images.")
 
     def __len__(self):
         return len(self.data)

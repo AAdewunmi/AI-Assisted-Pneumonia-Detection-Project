@@ -8,6 +8,7 @@ import pandas as pd
 from pathlib import Path
 from src.data_loader import get_balanced_loader, get_class_weights
 from src.losses import FocalLoss
+from src.data_loader import get_data_loader
 
 
 def test_loader_shapes(fake_dataset):

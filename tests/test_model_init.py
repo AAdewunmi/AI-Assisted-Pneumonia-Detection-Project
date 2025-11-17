@@ -6,6 +6,14 @@ Unit tests for src/model.py to ensure model builds correctly.
 
 import torch
 from src.model import build_resnet50_baseline
+from src.data_loader import get_data_loader
+
+
+def test_loader_shapes(fake_dataset):
+    csv_path, img_dir = fake_dataset
+    loader = get_data_loader(csv_path, img_dir, batch_size=4)
+    imgs, labels = next(iter(loader))
+    assert imgs.shape == (4, 3, 224, 224)
 
 
 def test_model_initialization():

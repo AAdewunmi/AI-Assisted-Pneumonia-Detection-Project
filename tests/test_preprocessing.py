@@ -12,6 +12,13 @@ import numpy as np
 import cv2
 
 
+def test_loader_shapes(fake_dataset):
+    csv_path, img_dir = fake_dataset
+    loader = get_data_loader(csv_path, img_dir, batch_size=4)
+    imgs, labels = next(iter(loader))
+    assert imgs.shape == (4, 3, 224, 224)
+
+
 def setup_fake_data(tmp_path):
     img_dir = tmp_path / "images"
     img_dir.mkdir()

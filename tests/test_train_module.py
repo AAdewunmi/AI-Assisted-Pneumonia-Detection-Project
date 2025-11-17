@@ -7,6 +7,14 @@ Ensures that train_baseline runs without crashing and produces expected artifact
 import torch
 from unittest.mock import patch
 from src.train import train_baseline
+from src.data_loader import get_data_loader
+
+
+def test_loader_shapes(fake_dataset):
+    csv_path, img_dir = fake_dataset
+    loader = get_data_loader(csv_path, img_dir, batch_size=4)
+    imgs, labels = next(iter(loader))
+    assert imgs.shape == (4, 3, 224, 224)
 
 
 @patch("src.train.PneumoniaDataset")

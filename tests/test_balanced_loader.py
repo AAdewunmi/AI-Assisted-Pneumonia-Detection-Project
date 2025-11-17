@@ -10,6 +10,13 @@ from src.data_loader import get_balanced_loader, get_class_weights
 from src.losses import FocalLoss
 
 
+def test_loader_shapes(fake_dataset):
+    csv_path, img_dir = fake_dataset
+    loader = get_data_loader(csv_path, img_dir, batch_size=4)
+    imgs, labels = next(iter(loader))
+    assert imgs.shape == (4, 3, 224, 224)
+
+
 def setup_fake_labels(tmp_path):
     """Create a temporary CSV file with a known class imbalance."""
     df = pd.DataFrame({

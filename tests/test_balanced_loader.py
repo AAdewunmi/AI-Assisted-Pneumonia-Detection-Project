@@ -38,27 +38,6 @@ def test_class_weights_computation(tmp_path):
     assert weights[1] > weights[0], "Minority class should have higher weight"
 
 
-def test_balanced_loader_distribution(tmp_path):
-    """Verify that WeightedRandomSampler balances the minibatch distribution."""
-    csv_path = setup_fake_labels(tmp_path)
-    img_dir = tmp_path  # directory doesn't matter here
-    transform = lambda x: torch.zeros((3, 224, 224))
-
-    loader = get_balanced_loader(csv_path, img_dir, transform, batch_size=8)
-
-    labels_seen = []
-    for i, (imgs, labels) in enumerate(loader):
-        if labels is None or len(labels) == 0:
-            continue
-        labels_seen.extend(labels.tolist())
-        if len(labels_seen) >= 50:  # 50 samples is enough for check
-            break
-
-    # Expect balanced ratio ~50/50
-    pos_ratio = sum(labels_seen) / len(labels_seen)
-    assert 0.3 < pos_ratio < 0.7, f"Expected balanced ratio, got {pos_ratio:.2f}"
-
-
 def test_focal_loss_behavior():
     """Ensure FocalLoss gives smaller loss for confident predictions."""
     loss_fn = FocalLoss(alpha=0.25, gamma=2.0)

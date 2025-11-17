@@ -22,6 +22,9 @@ import pandas as pd
 from src.model import build_resnet50_baseline
 from src.data_loader import PneumoniaDataset
 
+from src.data_loader import get_balanced_loader, get_default_transform
+from src.losses import FocalLoss
+
 
 def collate_skip_none(batch):
     """Skip None entries returned by the Dataset."""
@@ -130,6 +133,14 @@ def train_baseline(csv_path: str, img_dir: str, epochs: int = 3, batch_size: int
     except Exception as e:
         print(f"Could not plot training metrics: {e}")
 
+
+# Example usage (Train with Balancing Enabled):
+transform = get_default_transform() 
+csv_path = "data/rsna_subset/stage_2_train_labels.csv"
+img_dir = "data/rsna_subset/train_images"
+
+loader = get_balanced_loader(csv_path, img_dir, transform, batch_size=8)
+criterion = FocalLoss(alpha=0.25, gamma=2.0)
 
 if __name__ == "__main__":
     csv_path = "data/rsna_subset/stage_2_train_labels.csv"

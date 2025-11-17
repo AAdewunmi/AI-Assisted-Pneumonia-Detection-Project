@@ -1,6 +1,6 @@
 """
 Custom PyTorch Dataset and DataLoader utilities for the RSNA Pneumonia Detection subset.
-Now includes WeightedRandomSampler support for class balancing.
+Now includes WeightedRandomSampler support and a standard preprocessing transform.
 """
 
 import os
@@ -73,15 +73,28 @@ class PneumoniaDataset(Dataset):
         if self.transform:
             img = self.transform(Image.fromarray(img))
         else:
-            default_tf = transforms.Compose([
-                transforms.ToTensor(),
-                transforms.Resize((224, 224)),
-                transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                                     std=[0.229, 0.224, 0.225])
-            ])
-            img = default_tf(Image.fromarray(img))
+            img = get_default_transform()(Image.fromarray(img))
 
         return img, label
+
+
+def get_default_transform():
+    """
+    Return the default preprocessing pipeline used throughout training.
+
+    Includes:
+        - Resize to 224x224
+        - Convert to tensor
+        - Normalize using ImageNet mean/std
+    """
+    return transforms.Compose([
+        transforms.Resize((224, 224)),
+        transforms.ToTensor(),
+        transforms.Normalize(
+            mean=[0.485, 0.456, 0.406],
+            std=[0.229, 0.224, 0.225]
+        )
+    ])
 
 
 def get_class_weights(csv_path):

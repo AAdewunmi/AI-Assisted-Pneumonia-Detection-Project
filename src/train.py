@@ -1,84 +1,94 @@
 """
-src/train.py
-------------
-Trains the baseline ResNet-50 model on the RSNA Pneumonia Detection subset.
-Includes:
- - graceful skipping of missing images
- - CSV logging of metrics
- - automatic saving of best-performing model checkpoint
+Training script for PneumoDetect baseline and balanced models.
+
+Features:
+- Supports unbalanced and weighted sampling modes
+- Automatically saves best model checkpoint (highest accuracy)
+- Logs loss/accuracy per epoch to training_log.csv
+- CI-safe: falls back to synthetic CSV when dataset unavailable
 """
 
-import csv
-from datetime import datetime
-from pathlib import Path
-import torch
-from torch import nn, optim
-from torch.utils.data import DataLoader
-from torchvision import transforms
-from tqdm import tqdm
-import matplotlib.pyplot as plt
+import argparse
 import pandas as pd
-
-from src.model import build_resnet50_baseline
-from src.data_loader import PneumoniaDataset
-
-from src.data_loader import get_balanced_loader, get_default_transform
-from src.losses import FocalLoss
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+from torch.utils.data import DataLoader
+from torchvision import models, transforms
+from tqdm import tqdm
+from pathlib import Path
+from src.data_loader import get_data_loader, get_balanced_loader, get_default_transform
 
 
 def collate_skip_none(batch):
-    """Skip None entries returned by the Dataset."""
+    """Skip None samples (missing images)."""
     batch = [b for b in batch if b is not None]
     if len(batch) == 0:
         return None
-    return torch.utils.data.dataloader.default_collate(batch)
+    imgs, labels = zip(*batch)
+    return torch.stack(imgs), torch.tensor(labels)
 
 
-def train_baseline(csv_path: str, img_dir: str, epochs: int = 3, batch_size: int = 8, lr: float = 1e-3):
-    """Train a ResNet-50 pneumonia classifier and log metrics."""
-    device = (
-        "mps" if torch.backends.mps.is_available()
-        else "cuda" if torch.cuda.is_available()
-        else "cpu"
-    )
+def build_resnet50_baseline(num_classes=2):
+    """Return a pretrained ResNet-50 with custom classification head."""
+    model = models.resnet50(weights="IMAGENET1K_V1")
+    for param in model.parameters():
+        param.requires_grad = False
+    model.fc = nn.Linear(model.fc.in_features, num_classes)
+    return model
+
+
+def ensure_dataset_available(csv_path: Path):
+    """
+    Ensure the dataset CSV exists.
+    If missing (e.g., in CI), create a small synthetic CSV for testing.
+    """
+    if not csv_path.exists():
+        print(f"Warning: {csv_path} not found. Creating synthetic test CSV for CI.")
+        tmp_dir = Path("data")
+        tmp_dir.mkdir(parents=True, exist_ok=True)
+        tmp_path = tmp_dir / "tmp_labels.csv"
+
+        df = pd.DataFrame({
+            "patientId": [f"fake_{i}" for i in range(10)],
+            "Target": [0, 1] * 5
+        })
+        df.to_csv(tmp_path, index=False)
+        csv_path = tmp_path
+    return csv_path
+
+
+def train_baseline(csv_path, img_dir, epochs=3, batch_size=8, lr=1e-3, balanced=False):
+    """
+    Train baseline or balanced ResNet-50 model.
+    Saves best checkpoint and training log.
+    """
+    csv_path = ensure_dataset_available(Path(csv_path))
+    img_dir = Path(img_dir)
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")
 
-    # Image preprocessing pipeline
-    transform = transforms.Compose([
-        transforms.ToTensor(),
-        transforms.Resize((224, 224)),
-        transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                             std=[0.229, 0.224, 0.225]),
-    ])
+    transform = get_default_transform()
+    if balanced:
+        loader = get_balanced_loader(csv_path, img_dir, transform, batch_size=batch_size)
+    else:
+        loader = get_data_loader(csv_path, img_dir, transform, batch_size=batch_size)
 
-    # Dataset + DataLoader
-    dataset = PneumoniaDataset(csv_path, img_dir, transform=transform)
-    loader = DataLoader(dataset, batch_size=batch_size, shuffle=True, collate_fn=collate_skip_none)
+    model = build_resnet50_baseline().to(device)
+    optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+    criterion = nn.CrossEntropyLoss()
 
-    # Model setup
-    model = build_resnet50_baseline(num_classes=2, freeze_backbone=True).to(device)
-    criterion = nn.NLLLoss()
-    optimizer = optim.Adam(model.fc.parameters(), lr=lr)
+    best_acc = 0.0
+    logs = []
 
-    # CSV log setup
-    log_path = Path("training_log.csv")
-    with open(log_path, "w", newline="") as f:
-        writer = csv.writer(f)
-        writer.writerow(["timestamp", "epoch", "loss", "accuracy"])
-
-    save_dir = Path("saved_models")
-    save_dir.mkdir(parents=True, exist_ok=True)
-    best_acc = 0.0  # track best accuracy
-
-    model.train()
     for epoch in range(epochs):
+        model.train()
         running_loss, correct, total = 0.0, 0, 0
-        pbar = tqdm(loader, desc=f"Epoch {epoch+1}/{epochs}")
 
+        pbar = tqdm(loader, desc=f"Epoch {epoch+1}/{epochs}", leave=False)
         for batch in pbar:
             if batch is None:
                 continue
-
             imgs, labels = batch
             imgs, labels = imgs.to(device), labels.to(device)
 
@@ -92,57 +102,48 @@ def train_baseline(csv_path: str, img_dir: str, epochs: int = 3, batch_size: int
             _, preds = torch.max(outputs, 1)
             correct += (preds == labels).sum().item()
             total += labels.size(0)
-
-            pbar.set_postfix(loss=loss.item(), acc=correct / total)
+            acc = correct / total if total > 0 else 0.0
+            pbar.set_postfix({"loss": f"{loss.item():.3f}", "acc": f"{acc:.3f}"})
 
         epoch_loss = running_loss / len(loader)
-        epoch_acc = correct / total
+        epoch_acc = correct / total if total > 0 else 0.0
+
         print(f"Epoch {epoch+1}: Loss={epoch_loss:.4f}, Accuracy={epoch_acc:.4f}")
 
-        # Save metrics to log
-        with open(log_path, "a", newline="") as f:
-            writer = csv.writer(f)
-            writer.writerow([datetime.now().isoformat(), epoch + 1, epoch_loss, epoch_acc])
+        logs.append({"epoch": epoch + 1, "loss": epoch_loss, "accuracy": epoch_acc})
 
-        # --- Save best model checkpoint ---
+        # Save best model checkpoint
         if epoch_acc > best_acc:
             best_acc = epoch_acc
-            best_path = save_dir / "resnet50_best.pt"
-            torch.save(model.state_dict(), best_path)
-            print(f"New best model saved (Accuracy={best_acc:.4f}) → {best_path}")
+            Path("saved_models").mkdir(parents=True, exist_ok=True)
+            best_model_path = Path("saved_models/resnet50_best.pt")
+            torch.save(model.state_dict(), best_model_path)
+            print(f"New best model saved (Accuracy={best_acc:.4f}) → {best_model_path}")
 
-    # Save final model
-    final_path = save_dir / "resnet50_baseline.pt"
+    # Save final model and log
+    final_path = Path("saved_models/resnet50_baseline.pt")
     torch.save(model.state_dict(), final_path)
     print(f"Final model saved to: {final_path}")
-    print(f"Training log saved to: {log_path}")
 
-    # Optional: quick plot
-    try:
-        df = pd.read_csv(log_path)
-        plt.figure(figsize=(6, 4))
-        plt.plot(df["epoch"], df["accuracy"], label="Accuracy")
-        plt.plot(df["epoch"], df["loss"], label="Loss")
-        plt.title("Training Metrics")
-        plt.xlabel("Epoch")
-        plt.ylabel("Value")
-        plt.legend()
-        plt.grid(True)
-        plt.tight_layout()
-        plt.show()
-    except Exception as e:
-        print(f"Could not plot training metrics: {e}")
+    pd.DataFrame(logs).to_csv("training_log.csv", index=False)
+    print("Training log saved to: training_log.csv")
 
-
-# Example usage (Train with Balancing Enabled):
-transform = get_default_transform() 
-csv_path = "data/rsna_subset/stage_2_train_labels.csv"
-img_dir = "data/rsna_subset/train_images"
-
-loader = get_balanced_loader(csv_path, img_dir, transform, batch_size=8)
-criterion = FocalLoss(alpha=0.25, gamma=2.0)
 
 if __name__ == "__main__":
-    csv_path = "data/rsna_subset/stage_2_train_labels.csv"
-    img_dir = "data/rsna_subset/train_images"
-    train_baseline(csv_path, img_dir)
+    parser = argparse.ArgumentParser(description="Train PneumoDetect baseline model.")
+    parser.add_argument("--balanced", action="store_true", help="Use WeightedRandomSampler for balanced training.")
+    parser.add_argument("--epochs", type=int, default=3, help="Number of training epochs.")
+    parser.add_argument("--batch_size", type=int, default=8, help="Batch size for training.")
+    parser.add_argument("--lr", type=float, default=1e-3, help="Learning rate.")
+    parser.add_argument("--csv_path", type=str, default="data/rsna_subset/stage_2_train_labels.csv")
+    parser.add_argument("--img_dir", type=str, default="data/rsna_subset/train_images")
+    args = parser.parse_args()
+
+    train_baseline(
+        csv_path=args.csv_path,
+        img_dir=args.img_dir,
+        epochs=args.epochs,
+        batch_size=args.batch_size,
+        lr=args.lr,
+        balanced=args.balanced,
+    )

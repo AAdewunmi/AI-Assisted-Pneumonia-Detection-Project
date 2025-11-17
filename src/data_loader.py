@@ -102,27 +102,27 @@ def get_class_weights(csv_path):
     return weights
 
 
-def get_balanced_loader(csv_path, img_dir, transform=None, batch_size=8):
-    """
-    Return a DataLoader that balances classes using WeightedRandomSampler.
-    Automatically handles missing files and synthetic test data.
-    """
+def get_balanced_loader(csv_path, img_dir, transform, batch_size=8):
+    """Return a DataLoader that balances classes using WeightedRandomSampler."""
     dataset = PneumoniaDataset(csv_path, img_dir, transform)
-    df = dataset.data  # use the filtered data
-    weights_dict = get_class_weights(csv_path)
+    df = pd.read_csv(csv_path)
 
-    # Handle synthetic/test CSVs gracefully
-    if df.empty:
-        print("Warning: dataset empty. Creating synthetic test labels.")
-        df = pd.DataFrame({"Target": [0, 1] * 5})
+    # Compute weights inversely proportional to class frequency
+    counts = df["Target"].value_counts().to_dict()
+    total = sum(counts.values())
+    inv_freq = {cls: total / (len(counts) * count) for cls, count in counts.items()}
 
-    sample_weights = [weights_dict.get(label, 1.0) for label in df["Target"].values]
+    # Assign sample weights and normalize
+    sample_weights = np.array([inv_freq[label] for label in df["Target"].values])
+    sample_weights /= sample_weights.sum()
+
     sampler = WeightedRandomSampler(
         weights=torch.DoubleTensor(sample_weights),
         num_samples=len(sample_weights),
         replacement=True,
     )
 
+    print(f"Class counts: {counts} | Normalized weights: {inv_freq}")
     loader = DataLoader(dataset, batch_size=batch_size, sampler=sampler)
     print("Balanced DataLoader ready.")
     return loader

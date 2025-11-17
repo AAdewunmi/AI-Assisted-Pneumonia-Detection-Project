@@ -28,3 +28,24 @@ def test_class_weights_computation(tmp_path):
     assert isinstance(weights, dict)
     assert 0 in weights and 1 in weights
     assert weights[1] > weights[0], "Minority class should have higher weight"
+
+
+def test_balanced_loader_distribution(tmp_path):
+    """Verify that WeightedRandomSampler balances the minibatch distribution."""
+    csv_path = setup_fake_labels(tmp_path)
+    img_dir = tmp_path  # directory doesn't matter here
+
+    # Minimal transform stub
+    transform = lambda x: torch.zeros((3, 224, 224))
+
+    loader = get_balanced_loader(csv_path, img_dir, transform, batch_size=8)
+
+    # Collect sample labels from a few batches
+    labels_seen = []
+    for i, (_, labels) in enumerate(loader):
+        labels_seen.extend(labels.tolist())
+        if i >= 5:  # 6 batches = 48 samples
+            break
+
+    pos_ratio = sum(labels_seen) / len(labels_seen)
+    assert 0.3 < pos_ratio < 0.7, f"Expected balanced ratio, got {pos_ratio:.2f}"

@@ -49,3 +49,20 @@ def test_balanced_loader_distribution(tmp_path):
 
     pos_ratio = sum(labels_seen) / len(labels_seen)
     assert 0.3 < pos_ratio < 0.7, f"Expected balanced ratio, got {pos_ratio:.2f}"
+
+
+def test_focal_loss_behavior():
+    """Ensure FocalLoss gives smaller loss for confident predictions."""
+    loss_fn = FocalLoss(alpha=0.25, gamma=2.0)
+
+    # Simulate confident predictions (logits favor correct class)
+    inputs_confident = torch.tensor([[5.0, 0.1], [0.1, 5.0]])
+    targets = torch.tensor([0, 1])
+
+    # Simulate uncertain predictions (low separation)
+    inputs_uncertain = torch.tensor([[0.5, 0.4], [0.6, 0.5]])
+
+    loss_confident = loss_fn(inputs_confident, targets)
+    loss_uncertain = loss_fn(inputs_uncertain, targets)
+
+    assert loss_confident < loss_uncertain, "FocalLoss should penalize uncertain predictions more"

@@ -43,17 +43,17 @@ def test_differential_learning_rates():
     assert lrs == [1e-5, 1e-4], f"Expected LRs [1e-5, 1e-4], got {lrs}"
 
 
-# def test_scheduler_reduces_lr_on_plateau():
-#     """
-#     Verify that ReduceLROnPlateau correctly halves the learning rate after a plateau.
-#     """
-#     optimizer = torch.optim.Adam([torch.randn(2, 2, requires_grad=True)], lr=1e-3)
-#     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-#         optimizer, mode="min", factor=0.5, patience=1
-#     )
+def test_scheduler_reduces_lr_on_plateau():
+    """
+    Verify that ReduceLROnPlateau correctly halves the learning rate after a plateau.
+    """
+    optimizer = torch.optim.Adam([torch.randn(2, 2, requires_grad=True)], lr=1e-3)
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+        optimizer, mode="min", factor=0.5, patience=1
+    )
 
-#     scheduler.step(1.0)  # high loss
-#     scheduler.step(1.0)  # same loss again (plateau)
-#     new_lr = optimizer.param_groups[0]["lr"]
+    scheduler.step(1.0)  # high loss
+    scheduler.step(1.0)  # same loss again (plateau)
+    new_lr = optimizer.param_groups[0]["lr"]
 
-#     assert abs(new_lr - 5e-4) < 1e-6, f"Expected LR ~5e-4, got {new_lr}"
+    assert abs(new_lr - 5e-4) < 1e-6, f"Expected LR ~5e-4, got {new_lr}"

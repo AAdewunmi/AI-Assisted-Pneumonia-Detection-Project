@@ -40,6 +40,29 @@ def build_resnet50_baseline(num_classes: int = 2, freeze_backbone: bool = True) 
     return model
 
 
+def build_resnet50_finetuned(num_classes: int = 2) -> nn.Module:
+    """
+    Create a fine-tuned ResNet-50:
+    - Unfreezes the last two residual blocks (layer3, layer4)
+    - Keeps earlier layers frozen for stable transfer learning
+    - Adds a new FC classification head
+    """
+    model = models.resnet50(weights="IMAGENET1K_V1")
+
+    # Freeze all layers first
+    for param in model.parameters():
+        param.requires_grad = False
+
+    # Unfreeze the last two residual blocks
+    for layer_name in ["layer3", "layer4"]:
+        for param in getattr(model, layer_name).parameters():
+            param.requires_grad = True
+
+    # Replace classifier head
+    model.fc = nn.Linear(model.fc.in_features, num_classes)
+    return model
+
+
 if __name__ == "__main__":
     # Quick sanity check
     model = build_resnet50_baseline()

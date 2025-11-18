@@ -28,19 +28,19 @@ def test_finetuned_layers_unfrozen():
         "Lower layers should remain frozen for fine-tuning"
 
 
-# def test_differential_learning_rates():
-#     """
-#     Confirm that the fine-tuned optimizer applies different LRs for head vs. base layers.
-#     """
-#     model = build_resnet50_finetuned()
-#     params = [
-#         {"params": model.layer3.parameters(), "lr": 1e-5},
-#         {"params": model.layer4.parameters(), "lr": 1e-5},
-#         {"params": model.fc.parameters(), "lr": 1e-4},
-#     ]
-#     optimizer = torch.optim.Adam(params)
-#     lrs = sorted(set([g["lr"] for g in optimizer.param_groups]))
-#     assert lrs == [1e-5, 1e-4], f"Expected LRs [1e-5, 1e-4], got {lrs}"
+def test_differential_learning_rates():
+    """
+    Confirm that the fine-tuned optimizer applies different LRs for head vs. base layers.
+    """
+    model = build_resnet50_finetuned()
+    params = [
+        {"params": model.layer3.parameters(), "lr": 1e-5},
+        {"params": model.layer4.parameters(), "lr": 1e-5},
+        {"params": model.fc.parameters(), "lr": 1e-4},
+    ]
+    optimizer = torch.optim.Adam(params)
+    lrs = sorted(set([g["lr"] for g in optimizer.param_groups]))
+    assert lrs == [1e-5, 1e-4], f"Expected LRs [1e-5, 1e-4], got {lrs}"
 
 
 # def test_scheduler_reduces_lr_on_plateau():

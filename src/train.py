@@ -4,7 +4,8 @@ Training script for PneumoDetect baseline and balanced models.
 Features:
 - Supports unbalanced and weighted sampling modes.
 - Automatically saves best model checkpoint (highest accuracy).
-- Logs loss/accuracy per epoch to CSV.
+- Computes and logs ROC-AUC per epoch.
+- Logs loss/accuracy/roc_auc per epoch to CSV.
 - CI-safe: generates synthetic CSV if dataset is missing.
 """
 
@@ -19,6 +20,7 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 from torchvision import models
 from tqdm import tqdm
+from sklearn.metrics import roc_auc_score
 
 from src.data_loader import (
     get_data_loader,
@@ -98,8 +100,9 @@ def train_baseline(
     for epoch in range(epochs):
         model.train()
         running_loss, correct, total = 0.0, 0, 0
-        pbar = tqdm(loader, desc=f"Epoch {epoch + 1}/{epochs}", leave=False)
+        all_preds, all_labels = [], []
 
+        pbar = tqdm(loader, desc=f"Epoch {epoch + 1}/{epochs}", leave=False)
         for batch in pbar:
             if batch is None:
                 continue
@@ -114,16 +117,37 @@ def train_baseline(
 
             running_loss += loss.item()
             preds = torch.argmax(outputs, 1)
+            probs = torch.softmax(outputs, dim=1)[:, 1].detach().cpu()
+
             correct += (preds == labels).sum().item()
             total += labels.size(0)
+
+            all_preds.extend(probs.numpy())
+            all_labels.extend(labels.cpu().numpy())
+
             acc = correct / total if total > 0 else 0.0
             pbar.set_postfix({"loss": f"{loss.item():.3f}", "acc": f"{acc:.3f}"})
 
         epoch_loss = running_loss / max(1, len(loader))
         epoch_acc = correct / total if total > 0 else 0.0
-        print(f"Epoch {epoch + 1}: Loss={epoch_loss:.4f}, Accuracy={epoch_acc:.4f}")
 
-        logs.append({"epoch": epoch + 1, "loss": epoch_loss, "accuracy": epoch_acc})
+        # Compute ROC-AUC safely
+        try:
+            epoch_auc = roc_auc_score(all_labels, all_preds)
+        except Exception:
+            epoch_auc = float("nan")
+
+        logs.append({
+            "epoch": epoch + 1,
+            "loss": epoch_loss,
+            "accuracy": epoch_acc,
+            "roc_auc": epoch_auc
+        })
+
+        print(
+            f"Epoch {epoch + 1}: Loss={epoch_loss:.4f}, "
+            f"Accuracy={epoch_acc:.4f}, ROC-AUC={epoch_auc:.4f}"
+        )
 
         if epoch_acc > best_acc:
             best_acc = epoch_acc
@@ -132,7 +156,7 @@ def train_baseline(
             torch.save(model.state_dict(), best_path)
             print(f"New best model saved (Accuracy={best_acc:.4f}) → {best_path}")
 
-    # --- Write logs ---
+    # Save training logs
     reports_dir = Path("reports") / "week2_metrics"
     reports_dir.mkdir(parents=True, exist_ok=True)
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -142,21 +166,15 @@ def train_baseline(
     pd.DataFrame(logs).to_csv(log_path, index=False)
     print(f"Training log saved to: {log_path.resolve()}")
 
-    # Backward compatibility for old tests
-    legacy_log = Path("training_log.csv")
-    pd.DataFrame(logs).to_csv(legacy_log, index=False)
-    print(f"Also saved legacy log to: {legacy_log.resolve()}")
+    # Backward compatibility (root-level CSVs for testing)
+    pd.DataFrame(logs).to_csv("training_log.csv", index=False)
+    pd.DataFrame(logs).to_csv("training_summary.csv", index=False)
+    print("Also saved legacy logs to project root.")
 
-    # Also save one-line summary with final epoch metrics
-    summary = pd.DataFrame([logs[-1]])  # last epoch only
-    summary.to_csv("training_summary.csv", index=False)
-    print("Saved final epoch summary → training_summary.csv")
-
-    # --- Save final model ---
+    # Save final model
     final_model_path = Path("saved_models/resnet50_baseline.pt")
     torch.save(model.state_dict(), final_model_path)
     print(f"Final model saved to: {final_model_path.resolve()}")
-
 
 
 if __name__ == "__main__":

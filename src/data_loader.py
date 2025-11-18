@@ -47,6 +47,8 @@ class PneumoniaDataset(Dataset):
 
     def __getitem__(self, idx):
         """Return image tensor and label. Uses dummy tensor if image not found (synthetic test)."""
+        if idx >= len(self.data):
+            idx = idx % len(self.data)
         row = self.data.iloc[idx]
         pid = row["patientId"]
         label = int(row["Target"])

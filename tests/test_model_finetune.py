@@ -45,15 +45,18 @@ def test_differential_learning_rates():
 
 def test_scheduler_reduces_lr_on_plateau():
     """
-    Verify that ReduceLROnPlateau correctly halves the learning rate after a plateau.
+    Verify that ReduceLROnPlateau correctly halves the learning rate after sufficient plateau epochs.
     """
     optimizer = torch.optim.Adam([torch.randn(2, 2, requires_grad=True)], lr=1e-3)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
         optimizer, mode="min", factor=0.5, patience=1
     )
 
-    scheduler.step(1.0)  # high loss
-    scheduler.step(1.0)  # same loss again (plateau)
+    # Step sequence: improvement → plateau → plateau → LR drop
+    scheduler.step(1.0)  # initial loss, sets best
+    scheduler.step(1.0)  # same loss (1st plateau)
+    scheduler.step(1.0)  # 2nd plateau, triggers LR drop
     new_lr = optimizer.param_groups[0]["lr"]
 
-    assert abs(new_lr - 5e-4) < 1e-6, f"Expected LR ~5e-4, got {new_lr}"
+    assert abs(new_lr - 5e-4) < 1e-6, f"Expected LR to halve after plateau, got {new_lr}"
+

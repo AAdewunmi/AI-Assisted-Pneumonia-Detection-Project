@@ -10,8 +10,8 @@
 - Classification head: 2-class linear layer
 
 ## Performance Metrics
-- **AUC:** 0.446
-- **Average Precision (AP):** 0.294
+- **AUC:** 0.626
+- **Average Precision (AP):** 0.462
 
 ## Reflections
 - The model learns basic pneumonia patterns but shows class imbalance bias.

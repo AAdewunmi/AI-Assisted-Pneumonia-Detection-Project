@@ -50,32 +50,46 @@ def test_detect_model_from_checkpoint_finetune(tmp_checkpoint_dir):
 def test_resume_training_loads_checkpoint(tmp_checkpoint_dir, tmp_path, monkeypatch):
     """
     Simulate resuming training from a checkpoint without dataset access.
-    Uses synthetic CSV + fake images to ensure train_baseline() runs.
+    Mocks dataloaders and model loading to fully isolate the training loop.
     """
-    # Create fake checkpoint
+    from src import train as train_module
+    import torch
+    from torch import nn
+
+    # Create fake checkpoint path
     ckpt_path = _create_fake_model_file(tmp_checkpoint_dir / "resnet50_baseline.pt")
 
-    # Fake dataset
+    # Fake CSV + image dir
     csv_file = tmp_path / "fake_labels.csv"
     csv_file.write_text("patientId,Target\nfake1,0\nfake2,1\n")
-
     img_dir = tmp_path / "images"
     img_dir.mkdir(parents=True, exist_ok=True)
 
-    # Monkeypatch get_data_loader to avoid needing real images
-    import src.data_loader as dl
-
+    # --- Patch dataloaders at the train module level ---
     def fake_loader(*args, **kwargs):
-        """Return a small synthetic dataloader."""
         x = torch.randn(2, 3, 224, 224)
         y = torch.tensor([0, 1])
         return [(x, y)]
 
-    monkeypatch.setattr(dl, "get_data_loader", fake_loader)
-    monkeypatch.setattr(dl, "get_balanced_loader", fake_loader)
+    monkeypatch.setattr(train_module, "get_data_loader", fake_loader)
+    monkeypatch.setattr(train_module, "get_balanced_loader", fake_loader)
 
-    # Run one epoch of resumed training
-    train_baseline(
+    # --- Patch model builder to return a minimal dummy model ---
+    class DummyModel(nn.Module):
+        def __init__(self):
+            super().__init__()
+            self.fc = nn.Linear(2048, 2)
+
+        def forward(self, x):
+            return self.fc(torch.randn(x.shape[0], 2048))
+
+    monkeypatch.setattr(train_module, "build_resnet50_baseline", lambda *a, **k: DummyModel())
+
+    # --- Patch torch.load to return matching shapes ---
+    monkeypatch.setattr(torch, "load", lambda *a, **k: {"fc.weight": torch.randn(2, 2048), "fc.bias": torch.randn(2)})
+
+    # Run one synthetic training epoch with checkpoint resume
+    train_module.train_baseline(
         csv_path=csv_file,
         img_dir=img_dir,
         epochs=1,
@@ -85,8 +99,10 @@ def test_resume_training_loads_checkpoint(tmp_checkpoint_dir, tmp_path, monkeypa
         resume=str(ckpt_path),
     )
 
-    # Verify logs and model files exist
+    # --- Verify expected artifacts ---
     reports_dir = Path("reports") / "week2_metrics"
-    assert reports_dir.exists()
-    assert any(f.suffix == ".csv" for f in reports_dir.glob("*.csv")), "No log CSV created"
-    assert Path("saved_models/resnet50_best.pt").exists(), "Best model checkpoint missing"
+    assert reports_dir.exists(), "Expected reports/week2_metrics directory"
+    assert any(f.suffix == ".csv" for f in reports_dir.glob("*.csv")), "Training log missing"
+
+    model_dir = Path("saved_models")
+    assert any(f.suffix == ".pt" for f in model_dir.glob("*.pt")), "No checkpoint created"

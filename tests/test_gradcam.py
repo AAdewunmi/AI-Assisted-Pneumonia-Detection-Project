@@ -14,16 +14,16 @@ def test_gradcam_initialization():
     assert gradcam.target_layer is not None
 
 
-# def test_gradcam_generate_heatmap(tmp_path):
-#     """Check GradCAM produces a valid heatmap for a dummy input."""
-#     model = models.resnet50(weights=None)
-#     gradcam = GradCAM(model, target_layer_name="layer4")
+def test_gradcam_generate_heatmap(tmp_path):
+    """Check GradCAM produces a valid heatmap for a dummy input."""
+    model = models.resnet50(weights=None)
+    gradcam = GradCAM(model, target_layer_name="layer4")
 
-#     dummy_input = torch.randn(1, 3, 224, 224)
-#     heatmap = gradcam.generate(dummy_input, target_class=0)
-#     assert heatmap.ndim == 2
-#     assert heatmap.dtype == np.uint8
-#     assert 0 <= heatmap.max() <= 255
+    dummy_input = torch.randn(1, 3, 224, 224)
+    heatmap = gradcam.generate(dummy_input, target_class=0)
+    assert heatmap.ndim == 2
+    assert heatmap.dtype == np.uint8
+    assert 0 <= heatmap.max() <= 255
 
 
 # def test_overlay_and_save(tmp_path):

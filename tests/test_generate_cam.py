@@ -38,3 +38,12 @@ def test_generate_cam_returns_valid_heatmap(tmp_path):
     assert heatmap.shape[-1] > 0, "Heatmap should have non-zero dimensions"
     assert np.min(heatmap) >= 0.0, f"Heatmap min value out of range: {np.min(heatmap)}"
     assert np.max(heatmap) <= 1.0, f"Heatmap max value out of range: {np.max(heatmap)}"
+
+
+def test_generate_cam_handles_missing_file(tmp_path):
+    """Ensure generate_cam() raises FileNotFoundError for missing inputs."""
+    model_path = tmp_path / "nonexistent_model.pt"
+    img_path = tmp_path / "nonexistent_image.png"
+
+    with pytest.raises(FileNotFoundError):
+        generate_cam(img_path, model_path)

@@ -130,7 +130,11 @@ def generate_cam(image_path: Union[str, Path], model_path: Union[str, Path]) -> 
         model = models.resnet50(weights=None)
         num_ftrs = model.fc.in_features
         model.fc = torch.nn.Linear(num_ftrs, 2)
-        state_dict = torch.load(model_path, map_location=device)
+        try:
+            state_dict = torch.load(model_path, map_location=device, weights_only=True)
+        except TypeError:
+            # weights_only flag not available on older torch; fall back
+            state_dict = torch.load(model_path, map_location=device)
         model.load_state_dict(state_dict, strict=False)
     except Exception:
         # Lightweight fallback for test models
@@ -141,7 +145,11 @@ def generate_cam(image_path: Union[str, Path], model_path: Union[str, Path]) -> 
             torch.nn.Flatten(),
             torch.nn.Linear(8, 2),
         )
-        model.load_state_dict(torch.load(model_path, map_location=device), strict=False)
+        try:
+            state_dict = torch.load(model_path, map_location=device, weights_only=True)
+        except TypeError:
+            state_dict = torch.load(model_path, map_location=device)
+        model.load_state_dict(state_dict, strict=False)
 
     model.to(device).eval()
 

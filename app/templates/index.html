@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>PneumoDetect - Upload</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+</head>
+<body class="container mt-5">
+  <h1 class="text-center mb-4">PneumoDetect</h1>
+  <form action="{{ url_for('predict') }}" method="post" enctype="multipart/form-data" class="text-center">
+    <input type="file" name="image" accept="image/*" class="form-control mb-3" required>
+    <button type="submit" class="btn btn-primary">Predict</button>
+  </form>
+</body>
+</html>

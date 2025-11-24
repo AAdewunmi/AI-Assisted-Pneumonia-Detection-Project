@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>PneumoDetect - Result</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+</head>
+<body class="container mt-5 text-center">
+  <h2>Prediction Result:</h2>
+  <div class="alert alert-info mt-3">
+    <h3>{{ prediction }}</h3>
+  </div>
+  <a href="{{ url_for('home') }}" class="btn btn-secondary">Try Another</a>
+</body>
+</html>

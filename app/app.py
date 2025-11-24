@@ -86,7 +86,7 @@ def predict():
         return redirect(url_for("home"))
 
     img_bytes = file.read()
-    img = Image.open(io.BytesIO(img_bytes)).convert("RGB")
+    img = load_image(file_path=io.BytesIO(img_bytes))
     tensor = preprocess(img).unsqueeze(0).to(device)
 
     with torch.no_grad():

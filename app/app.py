@@ -1,18 +1,20 @@
 """
 app/app.py
-----------
-Flask entrypoint for PneumoDetect (Week 3 - Day 1)
-Adds DICOM + PNG upload support, routes for home and predict,
-and renders results safely with cached ResNet-50 model.
+-----------
+Flask application for PneumoDetect (Week 3, Day 2)
+Extends Day 1 by adding probability-based predictions, risk thresholding,
+and inference timing. Supports .jpg/.png/.dcm uploads.
 """
 
 from flask import Flask, render_template, request, redirect, url_for
 from werkzeug.utils import secure_filename
 from pathlib import Path
 import torch
+import torch.nn.functional as F
 from torchvision import models, transforms
 from PIL import Image
 from pydicom import dcmread
+import time
 import numpy as np
 import cv2
 
@@ -39,30 +41,48 @@ model.eval().to(device)
 print(f"Model loaded: {MODEL_PATH.name} on {device}")
 
 # -------------------------------------------------------------------
-# Image loader that handles DICOM and PNG/JPG
+# Image loader (handles .png/.jpg/.dcm)
 # -------------------------------------------------------------------
 def load_image(file_path: Path) -> Image.Image:
     ext = file_path.suffix.lower()
+    if ext in [".png", ".jpg", ".jpeg"]:
+        return Image.open(file_path).convert("RGB")
+
     if ext == ".dcm":
         ds = dcmread(str(file_path))
-        img = ds.pixel_array
-        img = cv2.normalize(img, None, 0, 255, cv2.NORM_MINMAX)
-        img = cv2.cvtColor(img.astype("uint8"), cv2.COLOR_GRAY2RGB)
-        return Image.fromarray(img)
-    else:
-        return Image.open(file_path).convert("RGB")
+        pixel_array = ds.pixel_array.astype(np.float32)
+
+        # Apply DICOM rescale parameters when present
+        slope = float(getattr(ds, "RescaleSlope", 1) or 1)
+        intercept = float(getattr(ds, "RescaleIntercept", 0) or 0)
+        pixel_array = pixel_array * slope + intercept
+
+        # Normalize to 0–255 and convert to 3-channel RGB
+        pixel_array -= pixel_array.min()
+        max_val = pixel_array.max()
+        if max_val > 0:
+            pixel_array = pixel_array / max_val
+        pixel_array = np.clip(pixel_array * 255.0, 0, 255).astype(np.uint8)
+        if pixel_array.ndim == 2:  # grayscale
+            pixel_array = cv2.cvtColor(pixel_array, cv2.COLOR_GRAY2RGB)
+        elif pixel_array.shape[-1] == 1:  # single-channel with trailing dim
+            pixel_array = cv2.cvtColor(pixel_array.squeeze(-1), cv2.COLOR_GRAY2RGB)
+
+        return Image.fromarray(pixel_array).convert("RGB")
+
+    raise ValueError("Unsupported image format. Please upload .jpg, .png, or .dcm.")
 
 # -------------------------------------------------------------------
 # Routes
 # -------------------------------------------------------------------
 @app.route("/", methods=["GET"])
 def index():
-    """Home page with upload form."""
+    """Home page with upload form and threshold slider."""
     return render_template("index.html")
 
 @app.route("/predict", methods=["POST"])
 def predict():
-    """Handle file upload and run inference."""
+    """Handle image upload, run inference, and return prediction."""
     if "file" not in request.files:
         return redirect(url_for("index"))
 
@@ -74,23 +94,44 @@ def predict():
     file_path = UPLOAD_FOLDER / filename
     file.save(file_path)
 
-    # Load image
-    img = load_image(file_path)
+    try:
+        # Get threshold (default 0.5)
+        threshold = float(request.form.get("threshold", 0.5))
 
-    transform = transforms.Compose([
-        transforms.Resize((224, 224)),
-        transforms.ToTensor(),
-        transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                             std=[0.229, 0.224, 0.225])
-    ])
-    tensor = transform(img).unsqueeze(0).to(device)
+        # Preprocess image
+        img = load_image(file_path)
+        transform = transforms.Compose([
+            transforms.Resize((224, 224)),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                                 std=[0.229, 0.224, 0.225])
+        ])
+        tensor = transform(img).unsqueeze(0).to(device)
 
-    with torch.no_grad():
-        outputs = model(tensor)
-        _, preds = torch.max(outputs, 1)
-        label = "Pneumonia Detected" if preds.item() == 1 else "Normal"
+        # Run inference with timing
+        start_time = time.time()
+        with torch.no_grad():
+            outputs = model(tensor)
+            probs = F.softmax(outputs, dim=1)
+            pneumonia_prob = probs[0, 1].item()
+        elapsed = time.time() - start_time
 
-    return render_template("result.html", prediction=label)
+        # Decision logic
+        decision = "High Risk" if pneumonia_prob > threshold else "Low Risk"
+        label = f"{decision} ({pneumonia_prob:.2f} probability)"
+        print(f"Prediction: {label} | Time: {elapsed:.2f}s")
+
+        return render_template(
+            "result.html",
+            prediction=label,
+            prob=f"{pneumonia_prob:.3f}",
+            threshold=threshold,
+            elapsed=f"{elapsed:.2f}s"
+        )
+
+    except Exception as e:
+        print(f" Error during prediction: {e}")
+        return redirect(url_for("index"))
 
 # -------------------------------------------------------------------
 # Run Flask App

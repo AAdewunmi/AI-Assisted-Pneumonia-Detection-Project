@@ -160,7 +160,14 @@ def generate_cam(image_path: Union[str, Path], model_path: Union[str, Path]) -> 
         transforms.Resize((224, 224)),
         transforms.ToTensor(),
     ])
-    img = Image.open(image_path).convert("RGB")
+    if image_path.suffix.lower() == ".dcm":
+        ds = dcmread(str(image_path))
+        img = ds.pixel_array
+        img = cv2.normalize(img, None, 0, 255, cv2.NORM_MINMAX)
+        img = cv2.cvtColor(img.astype("uint8"), cv2.COLOR_GRAY2RGB)
+        img = Image.fromarray(img)
+    else:
+        img = Image.open(image_path).convert("RGB")
     tensor = preprocess(img).unsqueeze(0).to(device)
 
     heatmap = cam.generate(tensor)

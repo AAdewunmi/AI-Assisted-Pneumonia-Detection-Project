@@ -10,7 +10,7 @@
     <h1 class="mb-4">PneumoDetect: Upload Chest X-ray</h1>
     <form action="{{ url_for('predict') }}" method="POST" enctype="multipart/form-data"
           class="card p-4 shadow-sm mx-auto" style="max-width: 500px;">
-      <input type="file" name="file" accept=".jpg,.jpeg,.png" class="form-control mb-3" required>
+      <input type="file" name="file" accept=".jpg,.jpeg,.png,.dcm" class="form-control mb-3" required>
       <label for="threshold" class="form-label">Risk Threshold (0–1)</label>
       <input type="range" name="threshold" min="0" max="1" step="0.05" value="0.5" class="form-range mb-3">
       <div class="form-check text-start mb-3">
@@ -22,5 +22,4 @@
   </div>
 </body>
 </html>
-
 

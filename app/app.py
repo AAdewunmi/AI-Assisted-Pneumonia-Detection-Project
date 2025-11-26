@@ -9,6 +9,7 @@ and inference timing. Supports .jpg/.png/.dcm uploads.
 from flask import Flask, render_template, request, redirect, url_for
 from werkzeug.utils import secure_filename
 from pathlib import Path
+import sys
 import torch
 import torch.nn.functional as F
 from torchvision import models, transforms
@@ -18,18 +19,22 @@ import time
 import numpy as np
 import cv2
 
-# Import GradCAM utilities
+# Project paths and import setup
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+# Import GradCAM utilities (now that the project root is on sys.path)
 from src.gradcam import generate_cam, GradCAM
 
 # -------------------------------------------------------------------
 # Flask Setup
 # -------------------------------------------------------------------
 app = Flask(__name__, template_folder="templates", static_folder="static")
-
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
 MODEL_PATH = PROJECT_ROOT / "saved_models" / "resnet50_best.pt"
-UPLOAD_FOLDER = PROJECT_ROOT / "uploads"
+UPLOAD_FOLDER = Path(app.static_folder) / "uploads"
 UPLOAD_FOLDER.mkdir(parents=True, exist_ok=True)
+ALLOWED_EXTENSIONS = {".png", ".jpg", ".jpeg", ".dcm"}
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -98,6 +103,11 @@ def predict():
 
     # Save uploaded file
     filename = secure_filename(file.filename)
+    ext = Path(filename).suffix.lower()
+    if ext not in ALLOWED_EXTENSIONS:
+        print(f"Rejected upload with unsupported extension: {ext}")
+        return redirect(url_for("index"))
+
     file_path = UPLOAD_FOLDER / filename
     file.save(file_path)
 
@@ -110,6 +120,7 @@ def predict():
         # Load image (supports DICOM and common image formats)
         # ------------------------------------------------------------
         ext = file_path.suffix.lower()
+        display_path = file_path
         if ext == ".dcm":
             from pydicom import dcmread
             ds = dcmread(str(file_path))
@@ -117,8 +128,13 @@ def predict():
             img = cv2.normalize(img, None, 0, 255, cv2.NORM_MINMAX)
             img = cv2.cvtColor(img.astype("uint8"), cv2.COLOR_GRAY2RGB)
             img_pil = Image.fromarray(img)
+
+            # Save a PNG copy for browser display
+            display_path = UPLOAD_FOLDER / f"{Path(filename).stem}.png"
+            cv2.imwrite(str(display_path), cv2.cvtColor(img, cv2.COLOR_RGB2BGR))
         else:
             img_pil = Image.open(file_path).convert("RGB")
+            display_path = file_path
 
         # ------------------------------------------------------------
         # Preprocessing
@@ -177,7 +193,7 @@ def predict():
             prob=f"{pneumonia_prob:.3f}",
             threshold=threshold,
             elapsed=f"{elapsed:.2f}s",
-            image_file=f"uploads/{filename}",
+            image_file=f"uploads/{display_path.name}",
             overlay_file=f"uploads/{overlay_path.name}" if overlay_path else None,
             show_cam=show_cam
         )

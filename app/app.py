@@ -18,6 +18,9 @@ import time
 import numpy as np
 import cv2
 
+# Import GradCAM utilities
+from src.gradcam import generate_cam, GradCAM
+
 # -------------------------------------------------------------------
 # Flask Setup
 # -------------------------------------------------------------------
@@ -82,7 +85,10 @@ def index():
 
 @app.route("/predict", methods=["POST"])
 def predict():
-    """Handle image upload, run inference, and return prediction."""
+    """
+    Handle image upload (.jpg/.png/.dcm), model inference, and Grad-CAM overlay generation.
+    Combines Day 2 inference logic + Day 3 explainability + DICOM support.
+    """
     if "file" not in request.files:
         return redirect(url_for("index"))
 
@@ -90,25 +96,44 @@ def predict():
     if file.filename == "":
         return redirect(url_for("index"))
 
+    # Save uploaded file
     filename = secure_filename(file.filename)
     file_path = UPLOAD_FOLDER / filename
     file.save(file_path)
 
     try:
-        # Get threshold (default 0.5)
+        # Threshold and Grad-CAM toggle
         threshold = float(request.form.get("threshold", 0.5))
+        show_cam = "show_cam" in request.form
 
-        # Preprocess image
-        img = load_image(file_path)
+        # ------------------------------------------------------------
+        # Load image (supports DICOM and common image formats)
+        # ------------------------------------------------------------
+        ext = file_path.suffix.lower()
+        if ext == ".dcm":
+            from pydicom import dcmread
+            ds = dcmread(str(file_path))
+            img = ds.pixel_array
+            img = cv2.normalize(img, None, 0, 255, cv2.NORM_MINMAX)
+            img = cv2.cvtColor(img.astype("uint8"), cv2.COLOR_GRAY2RGB)
+            img_pil = Image.fromarray(img)
+        else:
+            img_pil = Image.open(file_path).convert("RGB")
+
+        # ------------------------------------------------------------
+        # Preprocessing
+        # ------------------------------------------------------------
         transform = transforms.Compose([
             transforms.Resize((224, 224)),
             transforms.ToTensor(),
             transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                  std=[0.229, 0.224, 0.225])
         ])
-        tensor = transform(img).unsqueeze(0).to(device)
+        tensor = transform(img_pil).unsqueeze(0).to(device)
 
-        # Run inference with timing
+        # ------------------------------------------------------------
+        # Inference
+        # ------------------------------------------------------------
         start_time = time.time()
         with torch.no_grad():
             outputs = model(tensor)
@@ -116,21 +141,49 @@ def predict():
             pneumonia_prob = probs[0, 1].item()
         elapsed = time.time() - start_time
 
-        # Decision logic
+        # ------------------------------------------------------------
+        # Decision
+        # ------------------------------------------------------------
         decision = "High Risk" if pneumonia_prob > threshold else "Low Risk"
         label = f"{decision} ({pneumonia_prob:.2f} probability)"
         print(f"Prediction: {label} | Time: {elapsed:.2f}s")
 
+        # ------------------------------------------------------------
+        # Grad-CAM Overlay Generation
+        # ------------------------------------------------------------
+        overlay_path = None
+        if show_cam:
+            # Generate Grad-CAM heatmap
+            heatmap = generate_cam(file_path, MODEL_PATH)
+
+            # Use OpenCV array for overlay creation
+            if ext == ".dcm":
+                img_cv = cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR)
+            else:
+                img_cv = cv2.imread(str(file_path))
+
+            overlay = GradCAM.overlay_heatmap(img_cv, heatmap)
+            overlay_name = f"{Path(filename).stem}_gradcam.png"
+            overlay_path = UPLOAD_FOLDER / overlay_name
+            cv2.imwrite(str(overlay_path), overlay)
+            print(f"Grad-CAM overlay saved: {overlay_path.name}")
+
+        # ------------------------------------------------------------
+        # Render HTML Result
+        # ------------------------------------------------------------
         return render_template(
             "result.html",
             prediction=label,
             prob=f"{pneumonia_prob:.3f}",
             threshold=threshold,
-            elapsed=f"{elapsed:.2f}s"
+            elapsed=f"{elapsed:.2f}s",
+            image_file=f"uploads/{filename}",
+            overlay_file=f"uploads/{overlay_path.name}" if overlay_path else None,
+            show_cam=show_cam
         )
 
     except Exception as e:
-        print(f" Error during prediction: {e}")
+        print(f"Error during prediction: {e}")
         return redirect(url_for("index"))
 
 # -------------------------------------------------------------------

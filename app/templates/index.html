@@ -2,24 +2,77 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>PneumoDetect Upload</title>
+  <title>PneumoDetect — Upload & Predict</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Bootstrap -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+    body {
+      background-color: #f8f9fa;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    .upload-card {
+      max-width: 600px;
+      margin: 3rem auto;
+      padding: 2rem;
+      box-shadow: 0 0 12px rgba(0,0,0,0.1);
+      border-radius: 10px;
+      background-color: #fff;
+    }
+    .form-label {
+      font-weight: 600;
+    }
+    .footer {
+      text-align: center;
+      margin-top: 2rem;
+      font-size: 0.85rem;
+      color: #6c757d;
+    }
+  </style>
 </head>
-<body class="p-4 bg-light text-center">
+
+<body>
   <div class="container">
-    <h1 class="mb-4">PneumoDetect: Upload Chest X-ray</h1>
-    <form action="{{ url_for('predict') }}" method="POST" enctype="multipart/form-data"
-          class="card p-4 shadow-sm mx-auto" style="max-width: 500px;">
-      <input type="file" name="file" accept=".jpg,.jpeg,.png,.dcm" class="form-control mb-3" required>
-      <label for="threshold" class="form-label">Risk Threshold (0–1)</label>
-      <input type="range" name="threshold" min="0" max="1" step="0.05" value="0.5" class="form-range mb-3">
-      <div class="form-check text-start mb-3">
-        <input class="form-check-input" type="checkbox" name="show_cam" id="show_cam">
-        <label class="form-check-label" for="show_cam">Show Explainability Map (Grad-CAM)</label>
-      </div>
-      <button type="submit" class="btn btn-primary w-100">Predict</button>
-    </form>
+    <div class="upload-card text-center">
+      <h3 class="mb-3">🩺 PneumoDetect — AI-Assisted Pneumonia Detection</h3>
+      <p class="text-muted mb-4">Upload a chest X-ray image (.jpg, .png, or .dcm) and adjust sensitivity before running inference.</p>
+
+      <!-- Upload form -->
+      <form action="/predict" method="POST" enctype="multipart/form-data" class="text-start">
+
+        <!-- File input -->
+        <div class="mb-3">
+          <label for="file" class="form-label">Select Image</label>
+          <input type="file" class="form-control" name="file" id="file" accept=".jpg,.jpeg,.png,.dcm" required>
+        </div>
+
+        <!-- Threshold slider -->
+        <div class="mb-3">
+          <label for="threshold" class="form-label">Decision Threshold: <span id="thresholdValue">0.5</span></label>
+          <input type="range" class="form-range" name="threshold" id="threshold" min="0" max="1" step="0.01" value="0.5" oninput="thresholdValue.textContent = this.value">
+        </div>
+
+        <!-- Grad-CAM toggle -->
+        <div class="form-check form-switch mb-4">
+          <input class="form-check-input" type="checkbox" name="show_cam" id="show_cam">
+          <label class="form-check-label" for="show_cam">Show Explainability Map (Grad-CAM)</label>
+        </div>
+
+        <!-- Submit -->
+        <div class="text-center">
+          <button type="submit" class="btn btn-primary btn-lg w-100">Run Prediction</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      ⚠️ This tool is for research and decision support only; not a diagnostic device.
+    </div>
   </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
-

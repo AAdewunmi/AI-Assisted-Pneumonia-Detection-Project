@@ -44,9 +44,18 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model = models.resnet50(weights=None)
 num_ftrs = model.fc.in_features
 model.fc = torch.nn.Linear(num_ftrs, 2)
-model.load_state_dict(torch.load(MODEL_PATH, map_location=device, weights_only=True))
+
+if MODEL_PATH.exists():
+    try:
+        model.load_state_dict(torch.load(MODEL_PATH, map_location=device, weights_only=True))
+        print(f"Model loaded: {MODEL_PATH.name} on {device}")
+    except Exception as e:
+        print(f"Warning: model load failed ({e}); using randomly initialized weights.")
+else:
+    print("No model checkpoint found — using randomly initialized weights.")
+
 model.eval().to(device)
-print(f"Model loaded: {MODEL_PATH.name} on {device}")
+
 
 # -------------------------------------------------------------------
 # Image loader (handles .png/.jpg/.dcm)

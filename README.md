@@ -5,9 +5,12 @@
 
 ---
 
-[![PneumoDetect CI](https://github.com/AAdewunmi/AI-Assisted-Pneumonia-Detection-Project/actions/workflows/ci.yml/badge.svg)](https://github.com/AAdewunmi/AI-Assisted-Pneumonia-Detection-Project/actions/workflows/ci.yml)
-[![Lint](https://github.com/AAdewunmi/AI-Assisted-Pneumonia-Detection-Project/actions/workflows/ci.yml/badge.svg)](...)
-[![Coverage](https://img.shields.io/badge/coverage-88%25-brightgreen)](...)
+<!-- CI / Lint / Coverage Badges -->
+[![CI Pipeline](https://github.com/AAdewunmi/AI-Assisted-Pneumonia-Detection-Project/actions/workflows/ci.yml/badge.svg)](https://github.com/AAdewunmi/AI-Assisted-Pneumonia-Detection-Project/actions/workflows/ci.yml)
+[![Code Style: Flake8](https://img.shields.io/badge/code%20style-flake8-3572A5.svg)](https://flake8.pycqa.org/)
+[![Test Coverage](https://img.shields.io/badge/coverage-70%25-yellow.svg)](https://github.com/AAdewunmi/AI-Assisted-Pneumonia-Detection-Project/actions)
+[![Coverage Status](https://codecov.io/gh/AAdewunmi/AI-Assisted-Pneumonia-Detection-Project/branch/main/graph/badge.svg)](https://codecov.io/gh/AAdewunmi/AI-Assisted-Pneumonia-Detection-Project)
+
 
 ---
 

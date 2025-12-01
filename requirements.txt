@@ -1,6 +1,6 @@
-# ------------------------------
-# PneumoDetect Requirements
-# ------------------------------
+# ---------------------------------------------
+# PneumoDetect Requirements (Cross-platform)
+# ---------------------------------------------
 
 # Core scientific stack
 numpy==1.26.4
@@ -13,13 +13,11 @@ opencv-python==4.10.0.84
 Pillow==10.4.0
 pydicom==2.4.4
 
-# Machine learning (CPU default; GPU optional)
-torch==2.4.1
-torchvision==0.19.1
-# For Linux CI runners (CPU build only):
-# --extra-index-url https://download.pytorch.org/whl/cpu
+# Machine learning (CPU default; compatible with macOS + CI)
+torch>=2.3.0,<2.5.0
+torchvision>=0.18.0,<0.20.0
 
-# Flask web app + deployment
+# Flask web app
 Flask==3.0.3
 flask-cors==6.0.0
 Werkzeug==3.0.4

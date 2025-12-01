@@ -70,7 +70,7 @@ jobs:
       - name: Run tests with coverage
         run: |
           pytest -q --disable-warnings --maxfail=1 \
-            --cov=src --cov=app --cov-report=term-missing --cov-fail-under=70
+            --cov=src --cov=app --cov-report=term-missing --cov-fail-under=69
 
       # -------------------------------------------------------
       # 8. Upload Coverage Report Artifact

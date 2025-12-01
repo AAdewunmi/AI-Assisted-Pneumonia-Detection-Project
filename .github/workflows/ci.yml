@@ -7,12 +7,11 @@ on:
     branches: [ main, dev ]
 
 jobs:
-  build-test:
-    name: 🧪 Test Suite & Coverage
+  build:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.10, 3.11, 3.12]
+        python-version: [3.10, 3.11, 3.12]  # modern, supported versions
 
     steps:
       # -------------------------------------------------------

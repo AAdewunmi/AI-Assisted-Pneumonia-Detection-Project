@@ -6,7 +6,8 @@
 ---
 
 [![PneumoDetect CI](https://github.com/AAdewunmi/AI-Assisted-Pneumonia-Detection-Project/actions/workflows/ci.yml/badge.svg)](https://github.com/AAdewunmi/AI-Assisted-Pneumonia-Detection-Project/actions/workflows/ci.yml)
-
+[![Lint](https://github.com/AAdewunmi/AI-Assisted-Pneumonia-Detection-Project/actions/workflows/ci.yml/badge.svg)](...)
+[![Coverage](https://img.shields.io/badge/coverage-88%25-brightgreen)](...)
 
 ---
 

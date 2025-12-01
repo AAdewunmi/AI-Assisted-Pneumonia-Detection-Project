@@ -4,7 +4,6 @@ Integration tests for Grad-CAM refinement overlays (Thu - W2-D4)
 Checks overlay generation and file saving under reports/week2_gradcam_refinement/.
 """
 
-from pathlib import Path
 import numpy as np
 import torch
 import cv2

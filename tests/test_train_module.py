@@ -6,9 +6,8 @@ Ensures that train_baseline runs without crashing and produces expected artifact
 
 import torch
 from unittest.mock import patch
-from src.train import train_baseline
-from src.data_loader import get_data_loader
 from pathlib import Path
+from src.data_loader import get_data_loader
 from src.train import train_baseline
 
 

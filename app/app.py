@@ -6,18 +6,19 @@ Extends Day 1 by adding probability-based predictions, risk thresholding,
 and inference timing. Supports .jpg/.png/.dcm uploads.
 """
 
-from flask import Flask, render_template, request, redirect, url_for
-from werkzeug.utils import secure_filename
 from pathlib import Path
 import sys
+import time
+
+import cv2
+import numpy as np
 import torch
 import torch.nn.functional as F
-from torchvision import models, transforms
 from PIL import Image
+from flask import Flask, render_template, request, redirect, url_for
 from pydicom import dcmread
-import time
-import numpy as np
-import cv2
+from torchvision import models, transforms
+from werkzeug.utils import secure_filename
 
 # Project paths and import setup
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -25,7 +26,7 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 # Import GradCAM utilities (now that the project root is on sys.path)
-from src.gradcam import generate_cam, GradCAM
+from src.gradcam import generate_cam, GradCAM  # noqa: E402
 
 # -------------------------------------------------------------------
 # Flask Setup
@@ -92,10 +93,13 @@ def load_image(file_path: Path) -> Image.Image:
 # -------------------------------------------------------------------
 # Routes
 # -------------------------------------------------------------------
+
+
 @app.route("/", methods=["GET"])
 def index():
     """Home page with upload form and threshold slider."""
     return render_template("index.html")
+
 
 @app.route("/predict", methods=["POST"])
 def predict():
@@ -210,6 +214,7 @@ def predict():
     except Exception as e:
         print(f"Error during prediction: {e}")
         return redirect(url_for("index"))
+
 
 # -------------------------------------------------------------------
 # Run Flask App

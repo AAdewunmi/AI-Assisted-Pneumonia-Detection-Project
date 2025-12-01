@@ -7,10 +7,8 @@ Verifies that the subset creation script:
 3. Matches image count with CSV entries.
 """
 
-import os
 import shutil
 import pandas as pd
-from pathlib import Path
 from utility.subset_rsna import create_subset
 from src.data_loader import get_data_loader
 
@@ -59,10 +57,11 @@ def test_create_subset(tmp_path):
 
     df_subset = pd.read_csv(subset_csv)
     assert len(df_subset) <= 5, "Subset CSV contains extra rows"
-    assert all(df_subset["patientId"].isin([f.stem for f in subset_imgs])), \
+    assert all(df_subset["patientId"].isin([f.stem for f in subset_imgs])), (
         "CSV entries don't match copied images"
-    
-       
+    )
+
+
 def teardown_module(module):
     """Cleanup temporary test folders if needed."""
     shutil.rmtree("tests/tmp", ignore_errors=True)

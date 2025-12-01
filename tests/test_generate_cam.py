@@ -5,7 +5,6 @@ Ensures generate_cam() produces a valid, normalized heatmap tensor for both
 real (ResNet) and dummy model cases.
 """
 
-from pathlib import Path
 import torch
 import numpy as np
 from src.gradcam import generate_cam

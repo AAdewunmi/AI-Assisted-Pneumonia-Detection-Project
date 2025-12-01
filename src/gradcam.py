@@ -44,7 +44,9 @@ class GradCAM:
     def _backward_hook(self, module, grad_input, grad_output):
         self.gradients = grad_output[0].detach()
 
-    def generate(self, input_tensor: torch.Tensor, target_class: Optional[int] = None) -> torch.Tensor:
+    def generate(
+        self, input_tensor: torch.Tensor, target_class: Optional[int] = None
+    ) -> torch.Tensor:
         """Generate a normalized Grad-CAM heatmap tensor (0–1 range)."""
         if input_tensor.ndim != 4:
             raise ValueError("Expected input_tensor of shape (1, 3, H, W)")
@@ -76,7 +78,9 @@ class GradCAM:
         return heatmap.detach().cpu()
 
     @staticmethod
-    def overlay_heatmap(img: np.ndarray, heatmap: Union[np.ndarray, torch.Tensor], alpha: float = 0.5) -> np.ndarray:
+    def overlay_heatmap(
+        img: np.ndarray, heatmap: Union[np.ndarray, torch.Tensor], alpha: float = 0.5
+    ) -> np.ndarray:
         """Overlay a Grad-CAM heatmap on an image using cv2.COLORMAP_JET."""
         if isinstance(heatmap, torch.Tensor):
             heatmap = heatmap.numpy()
@@ -154,7 +158,9 @@ def generate_cam(image_path: Union[str, Path], model_path: Union[str, Path]) -> 
     model.to(device).eval()
 
     from src.gradcam import GradCAM
-    cam = GradCAM(model, target_layer_name="0" if isinstance(model, torch.nn.Sequential) else "layer4")
+    cam = GradCAM(
+        model, target_layer_name="0" if isinstance(model, torch.nn.Sequential) else "layer4"
+    )
 
     preprocess = transforms.Compose([
         transforms.Resize((224, 224)),
@@ -174,7 +180,6 @@ def generate_cam(image_path: Union[str, Path], model_path: Union[str, Path]) -> 
     return np.clip(heatmap.numpy(), 0.0, 1.0)
 
 
-
 if __name__ == "__main__":
     model_file = Path("saved_models/resnet50_baseline.pt")
     data_dir = Path("data/rsna_subset/train_images")
@@ -185,6 +190,8 @@ if __name__ == "__main__":
 
     if sample_image.exists() and model_file.exists():
         hm = generate_cam(sample_image, model_file)
-        print(f"Grad-CAM heatmap generated successfully: shape={hm.shape}, range=({hm.min():.2f}, {hm.max():.2f})")
+        print(
+            f"Grad-CAM heatmap generated successfully: shape={hm.shape}, range=({hm.min():.2f}, {hm.max():.2f})"
+        )
     else:
         print("No valid DICOM or model checkpoint found — skipping manual run.")

@@ -11,8 +11,11 @@ from app.app import app
 # -------------------------------
 # Threshold Logic Unit Tests
 # -------------------------------
+
+
 def test_apply_threshold_high():
     assert apply_threshold(0.86, 0.8) == "High Risk"
+
 
 def test_apply_threshold_low():
     assert apply_threshold(0.3, 0.8) == "Low Risk"

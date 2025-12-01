@@ -5,7 +5,6 @@ Verifies GradCAM hook registration, heatmap generation, and overlay saving.
 
 import torch
 import pytest
-from pathlib import Path
 from src.gradcam import GradCAM
 
 

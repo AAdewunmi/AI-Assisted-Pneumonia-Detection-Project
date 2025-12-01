@@ -12,7 +12,7 @@ Covers:
 import torch
 from pathlib import Path
 import pytest
-from src.train import detect_model_from_checkpoint, train_baseline
+from src.train import detect_model_from_checkpoint
 
 
 @pytest.fixture

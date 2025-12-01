@@ -155,7 +155,9 @@ def train_baseline(
         lr_current = optimizer.param_groups[0]["lr"]
 
         print(
-            f"Epoch {epoch + 1}: Loss={epoch_loss:.4f}, Accuracy={epoch_acc:.4f}, LR={lr_current:.6f}"
+            "Epoch {epoch}: Loss={loss:.4f}, Accuracy={acc:.4f}, LR={lr:.6f}".format(
+                epoch=epoch + 1, loss=epoch_loss, acc=epoch_acc, lr=lr_current
+            )
         )
 
         logs.append(
@@ -186,7 +188,7 @@ def train_baseline(
     # Legacy compatibility
     legacy_summary = Path("training_summary.csv")
     pd.DataFrame(logs).to_csv(legacy_summary, index=False)
-    print(f"Also saved legacy training_summary.csv at project root")
+    print("Also saved legacy training_summary.csv at project root")
 
     # --- Save final model ---
     final_model_path = Path("saved_models/resnet50_baseline.pt")
@@ -202,8 +204,12 @@ if __name__ == "__main__":
         parser.add_argument("--batch_size", type=int, default=8)
         parser.add_argument("--lr", type=float, default=1e-3)
         parser.add_argument("--resume", type=str, default=None)
-        parser.add_argument("--csv_path", type=str, default="data/rsna_subset/stage_2_train_labels.csv")
-        parser.add_argument("--img_dir", type=str, default="data/rsna_subset/train_images")
+        parser.add_argument(
+            "--csv_path", type=str, default="data/rsna_subset/stage_2_train_labels.csv"
+        )
+        parser.add_argument(
+            "--img_dir", type=str, default="data/rsna_subset/train_images"
+        )
         args = parser.parse_args()
 
         train_baseline(

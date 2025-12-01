@@ -6,7 +6,6 @@ Validates preprocessing outputs and normalization consistency.
 
 import torch
 from src.data_loader import get_data_loader
-from pathlib import Path
 import pandas as pd
 import numpy as np
 import cv2

@@ -1,15 +1,15 @@
 """
-Data loading utilities for PneumoDetect — supports balanced sampling and fallback for synthetic tests.
+Data loading utilities for PneumoDetect — supports balanced sampling and
+fallback for synthetic tests.
 """
 
 import torch
+from pathlib import Path
 from torch.utils.data import Dataset, DataLoader, WeightedRandomSampler
 from torchvision import transforms
-from pathlib import Path
 import pandas as pd
 from PIL import Image
 import numpy as np
-import random
 
 
 def get_default_transform():
@@ -98,9 +98,13 @@ def get_balanced_loader(csv_path, img_dir, transform=None, batch_size=8):
     weights = torch.DoubleTensor(weights)
     weights = weights / weights.sum() * len(weights)
 
-    sampler = WeightedRandomSampler(weights=weights, num_samples=len(weights), replacement=True)
+    sampler = WeightedRandomSampler(
+        weights=weights, num_samples=len(weights), replacement=True
+    )
     print(f"Class counts: {counts} | Smoothed sample weights applied.")
-    loader = DataLoader(dataset, batch_size=batch_size, sampler=sampler, collate_fn=collate_skip_none)
+    loader = DataLoader(
+        dataset, batch_size=batch_size, sampler=sampler, collate_fn=collate_skip_none
+    )
     print("Balanced DataLoader ready.")
     return loader
 
@@ -110,4 +114,6 @@ def get_data_loader(csv_path, img_dir, transform=None, batch_size=8, shuffle=Tru
     from src.train import collate_skip_none
     dataset = PneumoniaDataset(csv_path, img_dir, transform or get_default_transform())
     print("Standard DataLoader ready.")
-    return DataLoader(dataset, batch_size=batch_size, shuffle=shuffle, collate_fn=collate_skip_none)
+    return DataLoader(
+        dataset, batch_size=batch_size, shuffle=shuffle, collate_fn=collate_skip_none
+    )

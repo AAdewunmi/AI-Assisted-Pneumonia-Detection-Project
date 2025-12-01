@@ -48,7 +48,7 @@ def test_predict_route_with_image(client):
     assert response.status_code in (200, 302)
 
 
-# def test_invalid_route_returns_404(client):
-#     """Accessing an undefined route should return 404."""
-#     response = client.get("/nonexistent")
-#     assert response.status_code == 404
+def test_invalid_route_returns_404(client):
+    """Accessing an undefined route should return 404."""
+    response = client.get("/nonexistent")
+    assert response.status_code == 404

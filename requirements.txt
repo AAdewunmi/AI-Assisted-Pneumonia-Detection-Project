@@ -13,9 +13,12 @@ opencv-python==4.10.0.84
 Pillow==10.4.0
 pydicom==2.4.4
 
-# Machine learning (CPU default; compatible with macOS + CI)
-torch>=2.3.0,<2.5.0
-torchvision>=0.18.0,<0.20.0
+# Machine learning (CPU default; platform-aware pins)
+# - macOS x86_64 wheels stop at torch 2.2.x; arm64/Linux can use 2.3.x+
+torch==2.2.2; platform_system == "Darwin" and platform_machine == "x86_64"
+torchvision==0.17.2; platform_system == "Darwin" and platform_machine == "x86_64"
+torch>=2.3.0,<2.5.0; platform_system != "Darwin" or platform_machine != "x86_64"
+torchvision>=0.18.0,<0.20.0; platform_system != "Darwin" or platform_machine != "x86_64"
 
 # Flask web app
 Flask==3.0.3

@@ -32,20 +32,20 @@ def test_predict_route_no_file(client):
     assert b"Upload" in response.data or b"PneumoDetect" in response.data
 
 
-# def test_predict_route_with_image(client):
-#     """
-#     POST /predict with a valid image file.
-#     Since we mock model weights for CI, this only checks for response integrity.
-#     """
-#     img_bytes = io.BytesIO(b"fake_image_data")
-#     data = {
-#         "file": (img_bytes, "test.png"),
-#         "threshold": "0.5",
-#     }
+def test_predict_route_with_image(client):
+    """
+    POST /predict with a valid image file.
+    Since we mock model weights for CI, this only checks for response integrity.
+    """
+    img_bytes = io.BytesIO(b"fake_image_data")
+    data = {
+        "file": (img_bytes, "test.png"),
+        "threshold": "0.5",
+    }
 
-#     response = client.post("/predict", data=data, content_type="multipart/form-data")
-#     # Either redirect (if inference fails) or render result.html
-#     assert response.status_code in (200, 302)
+    response = client.post("/predict", data=data, content_type="multipart/form-data")
+    # Either redirect (if inference fails) or render result.html
+    assert response.status_code in (200, 302)
 
 
 # def test_invalid_route_returns_404(client):

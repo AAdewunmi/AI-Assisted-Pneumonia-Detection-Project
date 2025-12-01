@@ -25,11 +25,11 @@ def test_home_route(client):
     assert b"Upload" in response.data or b"Predict" in response.data
 
 
-# def test_predict_route_no_file(client):
-#     """POST /predict with no file should redirect to home."""
-#     response = client.post("/predict", data={}, follow_redirects=True)
-#     assert response.status_code == 200
-#     assert b"Upload" in response.data or b"PneumoDetect" in response.data
+def test_predict_route_no_file(client):
+    """POST /predict with no file should redirect to home."""
+    response = client.post("/predict", data={}, follow_redirects=True)
+    assert response.status_code == 200
+    assert b"Upload" in response.data or b"PneumoDetect" in response.data
 
 
 # def test_predict_route_with_image(client):

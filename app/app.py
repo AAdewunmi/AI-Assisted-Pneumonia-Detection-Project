@@ -90,6 +90,7 @@ def load_image(file_path: Path) -> Image.Image:
 
     raise ValueError("Unsupported image format. Please upload .jpg, .png, or .dcm.")
 
+
 # -------------------------------------------------------------------
 # Routes
 # -------------------------------------------------------------------

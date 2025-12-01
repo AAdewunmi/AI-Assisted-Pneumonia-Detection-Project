@@ -191,7 +191,8 @@ if __name__ == "__main__":
     if sample_image.exists() and model_file.exists():
         hm = generate_cam(sample_image, model_file)
         print(
-            f"Grad-CAM heatmap generated successfully: shape={hm.shape}, range=({hm.min():.2f}, {hm.max():.2f})"
+            "Grad-CAM heatmap generated successfully: "
+            f"shape={hm.shape}, range=({hm.min():.2f}, {hm.max():.2f})"
         )
     else:
         print("No valid DICOM or model checkpoint found — skipping manual run.")

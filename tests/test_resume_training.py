@@ -86,7 +86,11 @@ def test_resume_training_loads_checkpoint(tmp_checkpoint_dir, tmp_path, monkeypa
     monkeypatch.setattr(train_module, "build_resnet50_baseline", lambda *a, **k: DummyModel())
 
     # --- Patch torch.load to return matching shapes ---
-    monkeypatch.setattr(torch, "load", lambda *a, **k: {"fc.weight": torch.randn(2, 2048), "fc.bias": torch.randn(2)})
+    monkeypatch.setattr(
+        torch,
+        "load",
+        lambda *a, **k: {"fc.weight": torch.randn(2, 2048), "fc.bias": torch.randn(2)},
+    )
 
     # Run one synthetic training epoch with checkpoint resume
     train_module.train_baseline(

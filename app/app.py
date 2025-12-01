@@ -52,7 +52,7 @@ if MODEL_PATH.exists():
     except Exception as e:
         print(f"Warning: model load failed ({e}); using randomly initialized weights.")
 else:
-    print("No model checkpoint found — using randomly initialized weights.")
+    print("No model checkpoint found using randomly initialized weights.")
 
 model.eval().to(device)
 

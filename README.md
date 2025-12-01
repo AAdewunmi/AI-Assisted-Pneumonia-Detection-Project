@@ -1,6 +1,15 @@
 
 # 🩺 PneumoDetect: Deep Learning for Pneumonia Detection & Clinician Triage Dashboard
 
+## CI Status Badge
+
+---
+
+[![PneumoDetect CI](https://github.com/AAdewunmi/AI-Assisted-Pneumonia-Detection-Project/actions/workflows/ci.yml/badge.svg)](https://github.com/AAdewunmi/AI-Assisted-Pneumonia-Detection-Project/actions/workflows/ci.yml)
+
+
+---
+
 **Duration:** 4 Weeks (20 Lab Days, Mon–Fri)
 **Format:** Hands-on postgraduate programming lab
 **Focus:** Deep Learning • Explainability • Flask Apps • MLOps • Ethics in AI

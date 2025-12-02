@@ -221,5 +221,8 @@ def predict():
 # Run Flask App
 # -------------------------------------------------------------------
 if __name__ == "__main__":
-    print("Running Flask server on http://127.0.0.1:5000")
-    app.run(debug=True)
+    host = "0.0.0.0"
+    port = 5000
+    print(f"Running Flask server on http://{host}:{port}")
+    # Explicit host/port and disable reloader inside Docker to avoid double-start
+    app.run(host=host, port=port, debug=False, use_reloader=False)

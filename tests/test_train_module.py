@@ -1,7 +1,8 @@
 """
 tests/test_train_module.py
 --------------------------
-Ensures that train_baseline runs without crashing and produces expected artifacts.
+Ensures that train_baseline runs without crashing and produces expected
+artifacts.
 """
 
 import torch
@@ -35,7 +36,9 @@ def test_train_initialization(mock_dataset, tmp_path):
     csv_path = tmp_path / "fake.csv"
     img_dir = tmp_path
 
-    train_baseline(str(csv_path), str(img_dir), epochs=1, batch_size=2, lr=1e-3)
+    train_baseline(
+        str(csv_path), str(img_dir), epochs=1, batch_size=2, lr=1e-3
+    )
 
     project_root = Path.cwd()
     reports_dir = project_root / "reports" / "week2_metrics"
@@ -44,5 +47,6 @@ def test_train_initialization(mock_dataset, tmp_path):
     new_logs = list(reports_dir.glob("training_log_baseline_*.csv"))
 
     assert legacy_log.exists() or len(new_logs) > 0, (
-        "Expected training_summary.csv or week2_metrics/training_log_baseline_*.csv"
+        "Expected training_summary.csv or week2_metrics/"
+        "training_log_baseline_*.csv"
     )

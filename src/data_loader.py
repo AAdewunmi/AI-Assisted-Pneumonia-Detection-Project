@@ -33,7 +33,10 @@ class PneumoniaDataset(Dataset):
         self.data = pd.read_csv(self.csv_path)
 
         if not self.img_dir.exists():
-            print("No matching images found; keeping all rows for synthetic/testing mode.")
+            print(
+                "No matching images found; keeping all rows for "
+                "synthetic/testing mode."
+            )
         else:
             existing_files = set(f.stem for f in self.img_dir.glob("*"))
             self.data = self.data[self.data["patientId"].isin(existing_files)]
@@ -46,7 +49,7 @@ class PneumoniaDataset(Dataset):
         return len(self.data)
 
     def __getitem__(self, idx):
-        """Return image tensor and label. Uses dummy tensor if image not found (synthetic test)."""
+        """Return image tensor/label; fallback to dummy tensor if missing."""
         if idx >= len(self.data):
             idx = idx % len(self.data)
         row = self.data.iloc[idx]
@@ -87,14 +90,18 @@ def get_class_weights(csv_path):
 
 
 def get_balanced_loader(csv_path, img_dir, transform=None, batch_size=8):
-    """Balanced DataLoader using WeightedRandomSampler with smoothed weights."""
+    """Balanced DataLoader with WeightedRandomSampler and smoothed weights."""
     from src.train import collate_skip_none
 
-    dataset = PneumoniaDataset(csv_path, img_dir, transform or get_default_transform())
+    dataset = PneumoniaDataset(
+        csv_path, img_dir, transform or get_default_transform()
+    )
     df = pd.read_csv(csv_path)
 
     counts = df["Target"].value_counts().to_dict()
-    weights = df["Target"].apply(lambda x: 1.0 / (counts[x] ** 0.7)).values
+    weights = df["Target"].apply(
+        lambda x: 1.0 / (counts[x] ** 0.7)
+    ).values
     weights = torch.DoubleTensor(weights)
     weights = weights / weights.sum() * len(weights)
 
@@ -103,17 +110,27 @@ def get_balanced_loader(csv_path, img_dir, transform=None, batch_size=8):
     )
     print(f"Class counts: {counts} | Smoothed sample weights applied.")
     loader = DataLoader(
-        dataset, batch_size=batch_size, sampler=sampler, collate_fn=collate_skip_none
+        dataset,
+        batch_size=batch_size,
+        sampler=sampler,
+        collate_fn=collate_skip_none
     )
     print("Balanced DataLoader ready.")
     return loader
 
 
-def get_data_loader(csv_path, img_dir, transform=None, batch_size=8, shuffle=True):
+def get_data_loader(
+    csv_path, img_dir, transform=None, batch_size=8, shuffle=True
+):
     """Standard unbalanced DataLoader (default)."""
     from src.train import collate_skip_none
-    dataset = PneumoniaDataset(csv_path, img_dir, transform or get_default_transform())
+    dataset = PneumoniaDataset(
+        csv_path, img_dir, transform or get_default_transform()
+    )
     print("Standard DataLoader ready.")
     return DataLoader(
-        dataset, batch_size=batch_size, shuffle=shuffle, collate_fn=collate_skip_none
+        dataset,
+        batch_size=batch_size,
+        shuffle=shuffle,
+        collate_fn=collate_skip_none
     )

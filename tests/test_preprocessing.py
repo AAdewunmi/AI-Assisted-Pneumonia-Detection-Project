@@ -40,5 +40,7 @@ def test_preprocessing_pipeline(tmp_path):
     loader = get_data_loader(csv_path, img_dir, batch_size=4)
 
     imgs, labels = next(iter(loader))
-    assert imgs.shape == (4, 3, 224, 224), f"Unexpected image tensor shape {imgs.shape}"
+    assert imgs.shape == (4, 3, 224, 224), (
+        f"Unexpected image tensor shape {imgs.shape}"
+    )
     assert not torch.isnan(imgs).any(), "Image tensor should not contain NaNs"

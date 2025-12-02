@@ -9,7 +9,6 @@ Ensures tests run cleanly without large RSNA data dependencies.
 import pytest
 import pandas as pd
 import numpy as np
-from pathlib import Path
 from PIL import Image
 
 # Add project root to sys.path so tests can import project modules
@@ -44,7 +43,9 @@ def fake_img_dir(tmp_path_factory):
     img_dir = tmp_path_factory.mktemp("fake_images")
 
     for i in range(10):
-        img = Image.fromarray(np.random.randint(0, 255, (224, 224), dtype=np.uint8))
+        img = Image.fromarray(
+            np.random.randint(0, 255, (224, 224), dtype=np.uint8)
+        )
         img.save(img_dir / f"fake_{i}.png")
 
     return img_dir

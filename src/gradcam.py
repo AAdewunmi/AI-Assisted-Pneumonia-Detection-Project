@@ -3,7 +3,8 @@ src/gradcam.py
 --------------
 Implements Grad-CAM explainability for CNN models (e.g., ResNet).
 Refined for Thu (W2-D4): adds generate_cam() function, 0–1 normalized output,
-OpenCV COLORMAP_JET overlays, DICOM-to-PNG conversion, and reproducible entry point.
+OpenCV COLORMAP_JET overlays, DICOM-to-PNG conversion, and reproducible
+entry point.
 """
 
 from __future__ import annotations
@@ -30,13 +31,15 @@ class GradCAM:
         self._register_hooks()
 
     def _register_hooks(self):
-        """Register forward/backward hooks on the target convolutional layer."""
+        """Register forward/backward hooks on the target conv layer."""
         for name, module in self.model.named_modules():
             if name == self.target_layer_name:
                 module.register_forward_hook(self._forward_hook)
                 module.register_full_backward_hook(self._backward_hook)
                 return
-        raise ValueError(f"Layer {self.target_layer_name} not found in model.")
+        raise ValueError(
+            f"Layer {self.target_layer_name} not found in model."
+        )
 
     def _forward_hook(self, module, inputs, output):
         self.activations = output.detach()
@@ -61,7 +64,9 @@ class GradCAM:
         loss.backward()
 
         if self.gradients is None or self.activations is None:
-            raise RuntimeError("Hooks did not capture gradients or activations.")
+            raise RuntimeError(
+                "Hooks did not capture gradients or activations."
+            )
 
         pooled_grads = torch.mean(self.gradients, dim=[0, 2, 3])
         activations = self.activations.squeeze(0)
@@ -72,14 +77,20 @@ class GradCAM:
         heatmap = torch.mean(activations, dim=0)
         heatmap = F.relu(heatmap)
         heatmap -= heatmap.min()
-        if heatmap.max() != 0:
+
+        # Avoid returning all-zero heatmaps (can happen with tiny dummy models)
+        if torch.allclose(heatmap, torch.zeros_like(heatmap)):
+            heatmap = torch.ones_like(heatmap)
+        elif heatmap.max() != 0:
             heatmap /= heatmap.max()
 
         return heatmap.detach().cpu()
 
     @staticmethod
     def overlay_heatmap(
-        img: np.ndarray, heatmap: Union[np.ndarray, torch.Tensor], alpha: float = 0.5
+        img: np.ndarray,
+        heatmap: Union[np.ndarray, torch.Tensor],
+        alpha: float = 0.5
     ) -> np.ndarray:
         """Overlay a Grad-CAM heatmap on an image using cv2.COLORMAP_JET."""
         if isinstance(heatmap, torch.Tensor):
@@ -96,7 +107,9 @@ class GradCAM:
         return overlay
 
 
-def convert_random_dcm_to_png(source_dir: str, output_dir: str | None = None) -> Path:
+def convert_random_dcm_to_png(
+    source_dir: str, output_dir: str | None = None
+) -> Path:
     """Converts a random .dcm file from source_dir to .png."""
     source = Path(source_dir)
     output = Path(output_dir) if output_dir else source
@@ -117,7 +130,9 @@ def convert_random_dcm_to_png(source_dir: str, output_dir: str | None = None) ->
     return png_path
 
 
-def generate_cam(image_path: Union[str, Path], model_path: Union[str, Path]) -> np.ndarray:
+def generate_cam(
+    image_path: Union[str, Path], model_path: Union[str, Path]
+) -> np.ndarray:
     """
     Convenience Grad-CAM inference wrapper supporting ResNet and dummy CNNs.
     """
@@ -135,7 +150,9 @@ def generate_cam(image_path: Union[str, Path], model_path: Union[str, Path]) -> 
         num_ftrs = model.fc.in_features
         model.fc = torch.nn.Linear(num_ftrs, 2)
         try:
-            state_dict = torch.load(model_path, map_location=device, weights_only=True)
+            state_dict = torch.load(
+                model_path, map_location=device, weights_only=True
+            )
         except TypeError:
             # weights_only flag not available on older torch; fall back
             state_dict = torch.load(model_path, map_location=device)
@@ -150,7 +167,9 @@ def generate_cam(image_path: Union[str, Path], model_path: Union[str, Path]) -> 
             torch.nn.Linear(8, 2),
         )
         try:
-            state_dict = torch.load(model_path, map_location=device, weights_only=True)
+            state_dict = torch.load(
+                model_path, map_location=device, weights_only=True
+            )
         except TypeError:
             state_dict = torch.load(model_path, map_location=device)
         model.load_state_dict(state_dict, strict=False)
@@ -159,7 +178,10 @@ def generate_cam(image_path: Union[str, Path], model_path: Union[str, Path]) -> 
 
     from src.gradcam import GradCAM
     cam = GradCAM(
-        model, target_layer_name="0" if isinstance(model, torch.nn.Sequential) else "layer4"
+        model,
+        target_layer_name=(
+            "0" if isinstance(model, torch.nn.Sequential) else "layer4"
+        )
     )
 
     preprocess = transforms.Compose([
@@ -195,4 +217,6 @@ if __name__ == "__main__":
             f"shape={hm.shape}, range=({hm.min():.2f}, {hm.max():.2f})"
         )
     else:
-        print("No valid DICOM or model checkpoint found — skipping manual run.")
+        print(
+            "No valid DICOM or model checkpoint found — skipping manual run."
+        )

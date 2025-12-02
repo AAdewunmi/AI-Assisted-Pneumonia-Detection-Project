@@ -45,4 +45,6 @@ def test_focal_loss_behavior():
 
     loss_confident = loss_fn(inputs_confident, targets)
     loss_uncertain = loss_fn(inputs_uncertain, targets)
-    assert loss_confident < loss_uncertain, "FocalLoss should penalize uncertain predictions more"
+    assert loss_confident < loss_uncertain, (
+        "FocalLoss should penalize uncertain predictions more"
+    )

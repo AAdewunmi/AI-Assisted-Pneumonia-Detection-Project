@@ -48,10 +48,15 @@ model.fc = torch.nn.Linear(num_ftrs, 2)
 
 if MODEL_PATH.exists():
     try:
-        model.load_state_dict(torch.load(MODEL_PATH, map_location=device, weights_only=True))
+        model.load_state_dict(
+            torch.load(MODEL_PATH, map_location=device, weights_only=True)
+        )
         print(f"Model loaded: {MODEL_PATH.name} on {device}")
     except Exception as e:
-        print(f"Warning: model load failed ({e}); using randomly initialized weights.")
+        print(
+            "Warning: model load failed "
+            f"({e}); using randomly initialized weights."
+        )
 else:
     print("No model checkpoint found using randomly initialized weights.")
 
@@ -84,11 +89,15 @@ def load_image(file_path: Path) -> Image.Image:
         if pixel_array.ndim == 2:  # grayscale
             pixel_array = cv2.cvtColor(pixel_array, cv2.COLOR_GRAY2RGB)
         elif pixel_array.shape[-1] == 1:  # single-channel with trailing dim
-            pixel_array = cv2.cvtColor(pixel_array.squeeze(-1), cv2.COLOR_GRAY2RGB)
+            pixel_array = cv2.cvtColor(
+                pixel_array.squeeze(-1), cv2.COLOR_GRAY2RGB
+            )
 
         return Image.fromarray(pixel_array).convert("RGB")
 
-    raise ValueError("Unsupported image format. Please upload .jpg, .png, or .dcm.")
+    raise ValueError(
+        "Unsupported image format. Please upload .jpg, .png, or .dcm."
+    )
 
 
 # -------------------------------------------------------------------
@@ -105,7 +114,8 @@ def index():
 @app.route("/predict", methods=["POST"])
 def predict():
     """
-    Handle image upload (.jpg/.png/.dcm), model inference, and Grad-CAM overlay generation.
+    Handle image upload (.jpg/.png/.dcm), model inference, and Grad-CAM
+    overlay generation.
     Combines Day 2 inference logic + Day 3 explainability + DICOM support.
     """
     if "file" not in request.files:
@@ -145,7 +155,9 @@ def predict():
 
             # Save a PNG copy for browser display
             display_path = UPLOAD_FOLDER / f"{Path(filename).stem}.png"
-            cv2.imwrite(str(display_path), cv2.cvtColor(img, cv2.COLOR_RGB2BGR))
+            cv2.imwrite(
+                str(display_path), cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+            )
         else:
             img_pil = Image.open(file_path).convert("RGB")
             display_path = file_path
@@ -208,7 +220,9 @@ def predict():
             threshold=threshold,
             elapsed=f"{elapsed:.2f}s",
             image_file=f"uploads/{display_path.name}",
-            overlay_file=f"uploads/{overlay_path.name}" if overlay_path else None,
+            overlay_file=(
+                f"uploads/{overlay_path.name}" if overlay_path else None
+            ),
             show_cam=show_cam
         )
 
@@ -224,5 +238,6 @@ if __name__ == "__main__":
     host = "0.0.0.0"
     port = 5000
     print(f"Running Flask server on http://{host}:{port}")
-    # Explicit host/port and disable reloader inside Docker to avoid double-start
+    # Explicit host/port and disable reloader inside Docker to avoid
+    # double-start
     app.run(host=host, port=port, debug=False, use_reloader=False)

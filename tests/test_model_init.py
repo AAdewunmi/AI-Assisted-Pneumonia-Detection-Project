@@ -21,5 +21,9 @@ def test_model_initialization():
     model = build_resnet50_baseline(num_classes=2, freeze_backbone=True)
     x = torch.randn(2, 3, 224, 224)
     output = model(x)
-    assert output.shape == (2, 2), "Output shape should be (batch_size, num_classes)"
-    assert not torch.isnan(output).any(), "Model output should not contain NaN values"
+    assert output.shape == (2, 2), (
+        "Output shape should be (batch_size, num_classes)"
+    )
+    assert not torch.isnan(output).any(), (
+        "Model output should not contain NaN values"
+    )

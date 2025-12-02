@@ -56,7 +56,13 @@ def test_gradcam_saves_overlays(tmp_path, dummy_model):
     import cv2
     import numpy as np
 
-    img = (dummy_input.squeeze().permute(1, 2, 0).detach().numpy() * 255).astype(np.uint8)
+    img = (
+        dummy_input.squeeze()
+        .permute(1, 2, 0)
+        .detach()
+        .numpy()
+        * 255
+    ).astype(np.uint8)
     img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
     overlay = GradCAM.overlay_heatmap(img, heatmap)
 

@@ -42,12 +42,16 @@ def test_detect_model_from_checkpoint_baseline(tmp_checkpoint_dir):
 
 def test_detect_model_from_checkpoint_finetune(tmp_checkpoint_dir):
     """Ensure fine-tuned checkpoint detection works."""
-    ckpt = _create_fake_model_file(tmp_checkpoint_dir / "resnet50_finetuned.pt")
+    ckpt = _create_fake_model_file(
+        tmp_checkpoint_dir / "resnet50_finetuned.pt"
+    )
     builder = detect_model_from_checkpoint(ckpt)
     assert builder.__name__ == "build_resnet50_finetuned"
 
 
-def test_resume_training_loads_checkpoint(tmp_checkpoint_dir, tmp_path, monkeypatch):
+def test_resume_training_loads_checkpoint(
+    tmp_checkpoint_dir, tmp_path, monkeypatch
+):
     """
     Simulate resuming training from a checkpoint without dataset access.
     Mocks dataloaders and model loading to fully isolate the training loop.
@@ -57,7 +61,9 @@ def test_resume_training_loads_checkpoint(tmp_checkpoint_dir, tmp_path, monkeypa
     from torch import nn
 
     # Create fake checkpoint path
-    ckpt_path = _create_fake_model_file(tmp_checkpoint_dir / "resnet50_baseline.pt")
+    ckpt_path = _create_fake_model_file(
+        tmp_checkpoint_dir / "resnet50_baseline.pt"
+    )
 
     # Fake CSV + image dir
     csv_file = tmp_path / "fake_labels.csv"
@@ -83,13 +89,20 @@ def test_resume_training_loads_checkpoint(tmp_checkpoint_dir, tmp_path, monkeypa
         def forward(self, x):
             return self.fc(torch.randn(x.shape[0], 2048))
 
-    monkeypatch.setattr(train_module, "build_resnet50_baseline", lambda *a, **k: DummyModel())
+    monkeypatch.setattr(
+        train_module,
+        "build_resnet50_baseline",
+        lambda *a, **k: DummyModel(),
+    )
 
     # --- Patch torch.load to return matching shapes ---
     monkeypatch.setattr(
         torch,
         "load",
-        lambda *a, **k: {"fc.weight": torch.randn(2, 2048), "fc.bias": torch.randn(2)},
+        lambda *a, **k: {
+            "fc.weight": torch.randn(2, 2048),
+            "fc.bias": torch.randn(2),
+        },
     )
 
     # Run one synthetic training epoch with checkpoint resume
@@ -106,7 +119,11 @@ def test_resume_training_loads_checkpoint(tmp_checkpoint_dir, tmp_path, monkeypa
     # --- Verify expected artifacts ---
     reports_dir = Path("reports") / "week2_metrics"
     assert reports_dir.exists(), "Expected reports/week2_metrics directory"
-    assert any(f.suffix == ".csv" for f in reports_dir.glob("*.csv")), "Training log missing"
+    assert any(f.suffix == ".csv" for f in reports_dir.glob("*.csv")), (
+        "Training log missing"
+    )
 
     model_dir = Path("saved_models")
-    assert any(f.suffix == ".pt" for f in model_dir.glob("*.pt")), "No checkpoint created"
+    assert any(f.suffix == ".pt" for f in model_dir.glob("*.pt")), (
+        "No checkpoint created"
+    )

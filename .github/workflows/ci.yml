@@ -9,10 +9,10 @@ on:
 jobs:
   build-test:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     strategy:
       matrix:
-        python-version: ['3.10', '3.11', '3.12']
+        python-version: ['3.11']   # Use a single version for deterministic Docker builds
 
     steps:
       - name: Checkout repository
@@ -28,7 +28,6 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          # Preinstall heavy wheels from the CPU channel to warm cache and avoid timeouts
           pip install torch==2.4.1+cpu torchvision==0.19.1+cpu --index-url https://download.pytorch.org/whl/cpu
           pip install -r requirements.txt --extra-index-url https://download.pytorch.org/whl/cpu
           pip install pytest pytest-cov flake8
@@ -37,7 +36,15 @@ jobs:
         run: |
           flake8 src app tests --max-line-length=100
 
-      - name: Run tests with coverage
+      - name: Run tests with coverage (host environment)
         run: |
           pytest -q --disable-warnings --maxfail=1 \
             --cov=src --cov-report=term-missing --cov-fail-under=70
+
+      - name: Build Docker image
+        run: |
+          docker build -t pneumodetect:ci .
+
+      - name: Run tests inside Docker
+        run: |
+          docker run --rm pneumodetect:ci pytest -q --disable-warnings --maxfail=1

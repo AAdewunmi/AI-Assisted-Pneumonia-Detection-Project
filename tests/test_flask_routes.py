@@ -35,15 +35,18 @@ def test_predict_route_no_file(client):
 def test_predict_route_with_image(client):
     """
     POST /predict with a valid image file.
-    Since we mock model weights for CI, this only checks for response integrity.
-    """
+    Since we mock model weights for CI, this only checks for response
+        integrity.
+        """
     img_bytes = io.BytesIO(b"fake_image_data")
     data = {
         "file": (img_bytes, "test.png"),
         "threshold": "0.5",
     }
 
-    response = client.post("/predict", data=data, content_type="multipart/form-data")
+    response = client.post(
+        "/predict", data=data, content_type="multipart/form-data"
+    )
     # Either redirect (if inference fails) or render result.html
     assert response.status_code in (200, 302)
 

@@ -42,14 +42,22 @@ def collate_skip_none(batch):
 
 
 def ensure_dataset_available(csv_path: Path) -> Path:
-    """Ensure dataset CSV exists or create a small synthetic version for CI/testing."""
+    """
+    Ensure dataset CSV exists or create a small synthetic version for tests.
+    """
     if not csv_path.exists():
-        print(f"Warning: {csv_path} not found. Creating synthetic CSV for CI/testing.")
+        print(
+            "Warning: {path} not found. Creating synthetic CSV "
+            "for CI/testing.".format(path=csv_path)
+        )
         tmp_dir = Path("data")
         tmp_dir.mkdir(parents=True, exist_ok=True)
         tmp_path = tmp_dir / "tmp_labels.csv"
         df = pd.DataFrame(
-            {"patientId": [f"fake_{i}" for i in range(10)], "Target": [0, 1] * 5}
+            {
+                "patientId": [f"fake_{i}" for i in range(10)],
+                "Target": [0, 1] * 5,
+            }
         )
         df.to_csv(tmp_path, index=False)
         return tmp_path
@@ -99,9 +107,13 @@ def train_baseline(
 
     transform = get_default_transform()
     loader = (
-        get_balanced_loader(csv_path, img_dir, transform, batch_size=batch_size)
+        get_balanced_loader(
+            csv_path, img_dir, transform, batch_size=batch_size
+        )
         if balanced
-        else get_data_loader(csv_path, img_dir, transform, batch_size=batch_size)
+        else get_data_loader(
+            csv_path, img_dir, transform, batch_size=batch_size
+        )
     )
 
     # --- Load or initialize model ---
@@ -146,7 +158,11 @@ def train_baseline(
             total += labels.size(0)
             acc = correct / total if total > 0 else 0.0
             pbar.set_postfix(
-                {"loss": f"{loss.item():.3f}", "acc": f"{acc:.3f}", "lr": f"{lr:.6f}"}
+                {
+                    "loss": f"{loss.item():.3f}",
+                    "acc": f"{acc:.3f}",
+                    "lr": f"{lr:.6f}",
+                }
             )
 
         epoch_loss = running_loss / max(1, len(loader))
@@ -155,8 +171,12 @@ def train_baseline(
         lr_current = optimizer.param_groups[0]["lr"]
 
         print(
-            "Epoch {epoch}: Loss={loss:.4f}, Accuracy={acc:.4f}, LR={lr:.6f}".format(
-                epoch=epoch + 1, loss=epoch_loss, acc=epoch_acc, lr=lr_current
+            "Epoch {epoch}: Loss={loss:.4f}, Accuracy={acc:.4f}, "
+            "LR={lr:.6f}".format(
+                epoch=epoch + 1,
+                loss=epoch_loss,
+                acc=epoch_acc,
+                lr=lr_current,
             )
         )
 
@@ -174,7 +194,9 @@ def train_baseline(
             Path("saved_models").mkdir(parents=True, exist_ok=True)
             best_path = Path("saved_models/resnet50_best.pt")
             torch.save(model.state_dict(), best_path)
-            print(f"New best model saved (Accuracy={best_acc:.4f}) → {best_path}")
+            print(
+                f"New best model saved (Accuracy={best_acc:.4f}) → {best_path}"
+            )
 
     # --- Save logs ---
     reports_dir = Path("reports") / "week2_metrics"
@@ -198,14 +220,18 @@ def train_baseline(
 
 if __name__ == "__main__":
     try:
-        parser = argparse.ArgumentParser(description="Train PneumoDetect ResNet-50 model.")
+        parser = argparse.ArgumentParser(
+            description="Train PneumoDetect ResNet-50 model."
+        )
         parser.add_argument("--balanced", action="store_true")
         parser.add_argument("--epochs", type=int, default=3)
         parser.add_argument("--batch_size", type=int, default=8)
         parser.add_argument("--lr", type=float, default=1e-3)
         parser.add_argument("--resume", type=str, default=None)
         parser.add_argument(
-            "--csv_path", type=str, default="data/rsna_subset/stage_2_train_labels.csv"
+            "--csv_path",
+            type=str,
+            default="data/rsna_subset/stage_2_train_labels.csv",
         )
         parser.add_argument(
             "--img_dir", type=str, default="data/rsna_subset/train_images"

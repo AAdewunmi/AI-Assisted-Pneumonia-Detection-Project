@@ -26,4 +26,8 @@ class FocalLoss(nn.Module):
         ce_loss = F.cross_entropy(inputs, targets, reduction="none")
         pt = torch.exp(-ce_loss)
         focal_loss = self.alpha * (1 - pt) ** self.gamma * ce_loss
-        return focal_loss.mean() if self.reduction == "mean" else focal_loss.sum()
+        return (
+            focal_loss.mean()
+            if self.reduction == "mean"
+            else focal_loss.sum()
+        )

@@ -12,7 +12,9 @@ import torch.nn as nn
 from torchvision import models
 
 
-def build_resnet50_baseline(num_classes: int = 2, freeze_backbone: bool = True) -> nn.Module:
+def build_resnet50_baseline(
+    num_classes: int = 2, freeze_backbone: bool = True
+) -> nn.Module:
     """
     Build a ResNet-50 model pretrained on ImageNet for binary classification.
 

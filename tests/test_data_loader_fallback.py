@@ -1,6 +1,7 @@
 """
 Additional coverage for src.data_loader fallback paths.
-Ensures missing images produce dummy tensors and balanced loader still yields batches.
+Ensures missing images produce dummy tensors and balanced loader still yields
+batches.
 """
 
 import torch

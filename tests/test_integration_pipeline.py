@@ -42,12 +42,17 @@ def test_full_training_pipeline(fake_dataset, tmp_path):
     )
 
     # --- Assertions ---
-    assert (saved_models_dir / "resnet50_baseline.pt").exists(), "Final model not saved"
-    assert (saved_models_dir / "resnet50_best.pt").exists(), "Best model not saved"
+    assert (saved_models_dir / "resnet50_baseline.pt").exists(), (
+        "Final model not saved"
+    )
+    assert (saved_models_dir / "resnet50_best.pt").exists(), (
+        "Best model not saved"
+    )
 
     # Accept either of the valid log outputs
     has_legacy = legacy_log.exists()
     has_new = any(reports_dir.glob("training_log_baseline_*.csv"))
     assert has_legacy or has_new, (
-        "Expected either training_summary.csv or training_log_baseline_*.csv, but none found."
+        "Expected either training_summary.csv or training_log_baseline_*.csv, "
+        "but none found."
     )

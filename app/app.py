@@ -9,6 +9,7 @@ and inference timing. Supports .jpg/.png/.dcm uploads.
 from pathlib import Path
 import sys
 import time
+import os
 
 import cv2
 import numpy as np
@@ -235,9 +236,14 @@ def predict():
 # Run Flask App
 # -------------------------------------------------------------------
 if __name__ == "__main__":
-    host = "0.0.0.0"
-    port = 5000
-    print(f"Running Flask server on http://{host}:{port}")
-    # Explicit host/port and disable reloader inside Docker to avoid
-    # double-start
-    app.run(host=host, port=port, debug=False, use_reloader=False)
+    # Smart port selection
+    # 1. Use PORT env var if provided
+    # 2. Default to 5001 for local dev
+    port = int(os.environ.get("PORT", 5001))
+
+    # Host: '0.0.0.0' is required for Docker to expose the app
+    app.run(
+        host=os.environ.get("HOST", "0.0.0.0"),
+        port=port,
+        debug=os.environ.get("FLASK_DEBUG", "false").lower() == "true"
+    )

@@ -74,3 +74,9 @@ kaggle.json
 
 # Ignore training log file
 training_log.csv
+
+# Docker ignore
+.dockerignore
+.docker/
+# Ignore Dockerfile
+Dockerfile

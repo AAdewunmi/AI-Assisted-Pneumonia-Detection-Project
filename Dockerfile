@@ -11,7 +11,7 @@ WORKDIR /app
 COPY . .
 
 # Ensure the model directory is included
-# COPY saved_models/ saved_models/
+COPY saved_models/ saved_models/
 
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt

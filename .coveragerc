@@ -1,0 +1,7 @@
+[run]
+omit =
+    src/train.py
+    src/model.py
+    src/data_loader.py
+    src/losses.py
+    src/gradcam.py

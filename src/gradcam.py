@@ -18,6 +18,14 @@ from pathlib import Path
 from typing import Optional, Union
 from PIL import Image
 from torchvision import models, transforms
+import os
+import uuid
+
+# Ensure directory exists for Grad-CAM outputs
+os.makedirs(os.path.join("static", "gradcam"), exist_ok=True)
+
+# Generate a unique filename for each Grad-CAM image
+filename = f"gradcam_{uuid.uuid4().hex}.png"
 
 
 class GradCAM:
@@ -108,11 +116,16 @@ class GradCAM:
 
 
 def convert_random_dcm_to_png(
-    source_dir: str, output_dir: str | None = None
+    source_dir: str,
+    output_dir: Optional[str] = None,
 ) -> Path:
-    """Converts a random .dcm file from source_dir to .png."""
+    """Convert a random .dcm file from source_dir to PNG format."""
+
     source = Path(source_dir)
-    output = Path(output_dir) if output_dir else source
+    output = Path(output_dir) if output_dir else Path("static/gradcam")
+
+    # Ensure the output directory exists
+    output.mkdir(parents=True, exist_ok=True)
 
     dcm_files = list(source.glob("*.dcm"))
     if not dcm_files:
@@ -121,12 +134,18 @@ def convert_random_dcm_to_png(
     dcm_path = random.choice(dcm_files)
     ds = dcmread(str(dcm_path))
     img = ds.pixel_array
+
     img = cv2.normalize(img, None, 0, 255, cv2.NORM_MINMAX)
     img = cv2.cvtColor(img.astype("uint8"), cv2.COLOR_GRAY2RGB)
 
-    png_path = output / f"{dcm_path.stem}.png"
+    # Create a unique filename
+    filename = f"{dcm_path.stem}.png"
+    png_path = output / filename
+
+    # Save the PNG image
     cv2.imwrite(str(png_path), img)
     print(f"Converted {dcm_path.name} → {png_path.name}")
+
     return png_path
 
 

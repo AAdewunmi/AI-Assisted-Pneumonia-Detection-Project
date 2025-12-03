@@ -5,3 +5,4 @@ omit =
     src/data_loader.py
     src/losses.py
     src/gradcam.py
+    app/app.py

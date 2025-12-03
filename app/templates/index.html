@@ -9,35 +9,23 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
   <style>
-    body {
-      background-color: #f8f9fa;
-      font-family: 'Segoe UI', sans-serif;
-    }
-    .upload-card {
-      max-width: 600px;
-      margin: 3rem auto;
-      padding: 2rem;
-      box-shadow: 0 0 12px rgba(0,0,0,0.1);
-      border-radius: 10px;
-      background-color: #fff;
-    }
-    .form-label {
-      font-weight: 600;
-    }
-    .footer {
-      text-align: center;
-      margin-top: 2rem;
-      font-size: 0.85rem;
-      color: #6c757d;
-    }
+    body { background-color: #eef1f5; font-family: 'Inter', 'Segoe UI', sans-serif; }
+    .upload-card { max-width: 680px; margin: 3rem auto; padding: 2.5rem; box-shadow: 0 16px 40px rgba(0,0,0,0.08); border-radius: 16px; background-color: #fff; }
+    .hero-title { font-weight: 700; color: #1c1f26; }
+    .hero-subtitle { color: #4b5563; }
+    .form-label { font-weight: 600; color: #1f2937; }
+    .slider { accent-color: #0d6efd; }
+    .footer { text-align: center; margin-top: 2rem; font-size: 0.85rem; color: #6c757d; }
+    .toggle-label { font-weight: 600; color: #1f2937; }
+    .btn-primary { font-weight: 600; box-shadow: 0 8px 20px rgba(13,110,253,0.25); }
   </style>
 </head>
 
 <body>
   <div class="container">
     <div class="upload-card text-center">
-      <h3 class="mb-3">🩺 PneumoDetect — AI-Assisted Pneumonia Detection</h3>
-      <p class="text-muted mb-4">Upload a chest X-ray image (.jpg, .png, or .dcm) and adjust sensitivity before running inference.</p>
+      <h3 class="mb-3 hero-title">🩺 PneumoDetect — AI-Assisted Pneumonia Detection</h3>
+      <p class="text-muted mb-4 hero-subtitle">Upload a chest X-ray image (.jpg, .png, or .dcm) and adjust sensitivity before running inference.</p>
 
       <!-- Upload form -->
       <form action="/predict" method="POST" enctype="multipart/form-data" class="text-start">
@@ -51,13 +39,13 @@
         <!-- Threshold slider -->
         <div class="mb-3">
           <label for="threshold" class="form-label">Decision Threshold: <span id="thresholdValue">0.5</span></label>
-          <input type="range" class="form-range" name="threshold" id="threshold" min="0" max="1" step="0.01" value="0.5" oninput="thresholdValue.textContent = this.value">
+          <input type="range" class="form-range slider" name="threshold" id="threshold" min="0" max="1" step="0.01" value="0.5" oninput="thresholdValue.textContent = this.value">
         </div>
 
         <!-- Grad-CAM toggle -->
         <div class="form-check form-switch mb-4">
-          <input class="form-check-input" type="checkbox" name="show_cam" id="show_cam">
-          <label class="form-check-label" for="show_cam">Show Explainability Map (Grad-CAM)</label>
+          <input class="form-check-input" type="checkbox" name="show_cam" id="show_cam" checked>
+          <label class="form-check-label toggle-label" for="show_cam">Show Explainability Map (Grad-CAM)</label>
         </div>
 
         <!-- Submit -->

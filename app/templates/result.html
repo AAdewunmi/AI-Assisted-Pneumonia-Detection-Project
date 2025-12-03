@@ -10,9 +10,9 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
-        body { background-color: #f8f9fa; }
-        .result-card { box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-        .chart-container { height: 250px; }
+        body { background-color: #eef1f5; font-family: 'Inter', 'Segoe UI', sans-serif; }
+        .result-card { box-shadow: 0 10px 30px rgba(0,0,0,0.08); border-radius: 12px; }
+        .chart-container { height: 220px; }
         .disclaimer {
             font-size: 0.85rem;
             color: #6c757d;
@@ -21,61 +21,74 @@
         }
         img.result-image {
             max-width: 100%;
-            border-radius: 0.5rem;
+            border-radius: 12px;
             border: 1px solid #dee2e6;
         }
-        .btn-back {
-            margin-top: 1.5rem;
-        }
+        .btn-back { margin-top: 1.5rem; }
+        .section-title { font-weight: 700; color: #1c1f26; }
+        .hero { margin-top: 1rem; margin-bottom: 1rem; }
+        .row-gap { row-gap: 1rem; }
+        .metric-title { font-weight: 600; text-transform: uppercase; font-size: 0.85rem; color: #6c757d; }
+        .metric-value { font-weight: 700; color: #1c1f26; }
+        .metric-sub { margin: 0; font-size: 0.9rem; color: #4b5563; }
+        .header-icon { font-size: 1.5rem; }
     </style>
 </head>
 
 <body class="p-3">
 <div class="container">
-    <h2 class="text-center mb-4">🩺 PneumoDetect: Inference Results</h2>
+    <div class="text-center hero">
+        <div class="header-icon">🩺</div>
+        <h3 class="section-title mb-1">PneumoDetect: Inference Results</h3>
+    </div>
 
     <!-- Row 1: Original & Grad-CAM -->
-    <div class="row mb-4">
+    <div class="row mb-4 row-gap">
         <div class="col-md-6 text-center">
-            <h6>Uploaded Image</h6>
+            <h6 class="mb-2">Uploaded Image</h6>
             <img src="{{ url_for('static', filename=image_file) }}" class="result-image" alt="Uploaded image">
         </div>
-        {% if overlay_file %}
         <div class="col-md-6 text-center">
-            <h6>Grad-CAM Explainability Map</h6>
-            <img src="{{ url_for('static', filename=overlay_file) }}" class="result-image" alt="Grad-CAM overlay">
+            <h6 class="mb-2">Grad-CAM Explainability Map</h6>
+            {% if overlay_file %}
+                <img src="{{ url_for('static', filename=overlay_file) }}" class="result-image" alt="Grad-CAM overlay">
+            {% else %}
+                <div class="result-image d-flex align-items-center justify-content-center" style="background:#f8f9fa; min-height:100%;">
+                    <span class="text-muted">Grad-CAM unavailable for this prediction.</span>
+                </div>
+            {% endif %}
         </div>
-        {% endif %}
     </div>
 
     <!-- Row 2: Metrics Cards + Chart -->
     <div class="row g-3">
         <div class="col-md-4">
-            <div class="card result-card">
+            <div class="card result-card h-100">
                 <div class="card-body text-center">
-                    <h6 class="card-title">Prediction</h6>
+                    <div class="metric-title">Prediction</div>
                     <h4 class="text-primary">{{ prediction }}</h4>
-                    <p class="mb-0"><strong>Probability:</strong> {{ prob }}</p>
-                    <p><strong>Threshold:</strong> {{ threshold }}</p>
+                    <p class="metric-sub"><strong>Probability (Pneumonia):</strong> {{ prob_pneumonia|default(0)|float|round(3) }}</p>
+                    <p class="metric-sub"><strong>Probability (Normal):</strong> {{ prob_normal|default(0)|float|round(3) }}</p>
+                    <p class="metric-sub"><strong>Threshold:</strong> {{ threshold }}</p>
                 </div>
             </div>
         </div>
 
         <div class="col-md-4">
-            <div class="card result-card">
+            <div class="card result-card h-100">
                 <div class="card-body text-center">
-                    <h6 class="card-title">Performance Metrics</h6>
-                    <p><strong>AUC:</strong> 0.93</p>
-                    <p><strong>Sensitivity:</strong> 0.89 @ threshold {{ threshold }}</p>
-                    <p><strong>Inference Time:</strong> {{ elapsed }}</p>
+                    <div class="metric-title">Performance Metrics</div>
+                    <p class="metric-sub"><strong>AUC:</strong> 0.93</p>
+                    <p class="metric-sub"><strong>Sensitivity:</strong> 0.89 @ threshold {{ threshold }}</p>
+                    <p class="metric-sub"><strong>Inference Time:</strong> {{ elapsed }}</p>
                 </div>
             </div>
         </div>
 
         <div class="col-md-4">
-            <div class="card result-card">
+            <div class="card result-card h-100">
                 <div class="card-body text-center">
-                    <h6 class="card-title">Probability Distribution</h6>
+                    <div class="metric-title">Probability Distribution</div>
                     <canvas id="probChart" class="chart-container"></canvas>
                 </div>
             </div>
@@ -96,14 +109,15 @@
 <!-- Chart.js -->
 <script>
     const ctx = document.getElementById('probChart').getContext('2d');
-    const prob = parseFloat("{{ prob }}");
+    const probNormal = {{ prob_raw_normal|default(0)|tojson }};
+    const probPneumonia = {{ prob_raw_pneumonia|default(0)|tojson }};
     new Chart(ctx, {
         type: 'bar',
         data: {
             labels: ['Normal', 'Pneumonia'],
             datasets: [{
                 label: 'Class Probability',
-                data: [1 - prob, prob],
+                data: [probNormal, probPneumonia],
                 backgroundColor: ['#6c757d', '#dc3545']
             }]
         },

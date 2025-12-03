@@ -21,10 +21,10 @@ env.old/
 
 # PyTorch / TensorFlow checkpoints
 *.ckpt
-*.pt
+#*.pt
 *.pth
 checkpoints/
-saved_models/
+
 
 # Data and large assets
 data/

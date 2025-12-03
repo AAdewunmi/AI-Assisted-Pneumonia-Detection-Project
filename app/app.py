@@ -232,9 +232,16 @@ def predict():
         return redirect(url_for("index"))
 
 
+@app.route("/health")
+def health():
+    """Health check endpoint."""
+    return {"status": "OK"}, 200
+
 # -------------------------------------------------------------------
 # Run Flask App
 # -------------------------------------------------------------------
+
+
 if __name__ == "__main__":
     # Smart port selection
     # 1. Use PORT env var if provided

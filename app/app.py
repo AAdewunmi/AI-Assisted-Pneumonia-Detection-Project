@@ -48,9 +48,9 @@ app = Flask(
 )
 BASE_DIR = Path(__file__).resolve().parent
 
-# MODEL_PATH should resolve to /app/models/resnet50_best.pt in Docker
+# MODEL_PATH should resolve to /app/saved_models/resnet50_best.pt in Docker
 MODEL_PATH = Path(
-    os.environ.get("MODEL_PATH", "models/resnet50_best.pt")
+    os.environ.get("MODEL_PATH", "saved_models/resnet50_best.pt")
 ).resolve()
 
 UPLOAD_FOLDER = STATIC_DIR / "uploads"

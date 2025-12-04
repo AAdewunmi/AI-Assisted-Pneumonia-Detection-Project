@@ -84,5 +84,6 @@ It must not be used as a replacement for clinical judgement or radiologist evalu
 
 ## 6. Files Generated
 - `04_bias_analysis.ipynb` — full notebook  
-- Grad-CAM overlays for misclassified examples  
+- Grad-CAM overlays for misclassified examples 
+- Slice performance metrics for monitoring
 - Summary metrics table  

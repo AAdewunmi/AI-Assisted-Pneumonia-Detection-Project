@@ -16,7 +16,7 @@ class DummyModel(nn.Module):
     def __init__(self):
         super().__init__()
         self.layer4 = nn.Conv2d(3, 8, kernel_size=3, padding=1)
-        self.pool = nn.AdaptiveAvgPool2d((1,1))
+        self.pool = nn.AdaptiveAvgPool2d((1, 1))
         self.fc = nn.Linear(8, 2)
 
     def forward(self, x):

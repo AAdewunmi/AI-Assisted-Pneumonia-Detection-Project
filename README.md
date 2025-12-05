@@ -206,6 +206,10 @@ pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
+### 4. UI Screenshot
+
+<img width="626" height="1029" alt="Image" src="https://github.com/user-attachments/assets/0109b675-b56f-456c-88a5-eeb5d8f23e4f" />
+
 ---
 
 ## Running the Web App Locally

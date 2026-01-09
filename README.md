@@ -1,7 +1,5 @@
 
-# 🩺 PneumoDetect: Deep Learning for Pneumonia Detection & Clinician Triage Dashboard
-
-## CI Status Badge
+# 🩺 PneumoDetect: Clinical Decision Support System for Pneumonia Detection
 
 ---
 
@@ -17,7 +15,7 @@
 ---
 
 ````markdown
-# AI-Assisted Pneumonia Detection Project (PneumoDetect)
+# PneumoDetect: Clinical Decision Support System for Pneumonia Detection
 
 A research-grade, end-to-end deep learning project that detects pneumonia in chest X-rays, surfaces Grad-CAM explainability maps, and exposes a clinician-style triage dashboard through a Flask web app.
 

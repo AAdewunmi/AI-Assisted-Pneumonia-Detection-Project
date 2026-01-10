@@ -429,7 +429,6 @@ Potential future directions:
 * Public chest X-ray datasets and associated research communities for making imaging data available for educational work.
 * The PyTorch and Flask ecosystems for enabling rapid experimentation.
 * Open-source contributors in the Python and MLOps community whose tools and patterns inform this project.
-* OpenAI’s ChatGPT for assistance in refining documentation, lab structure, and explanatory text. 
 
 ---
 

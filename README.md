@@ -153,22 +153,45 @@ docker run --rm -p 5000:5000 pneumodetect:ci
 
 ```text
 AI-Assisted-Pneumonia-Detection-Project/
+├── .github/
+│   └── workflows/
+│       └── ci.yml
 ├── app/
 │   ├── app.py
 │   ├── templates/
-│   └── static/
+│   │   ├── index.html
+│   │   └── result.html
+│   ├── static/
+│   │   ├── main.js
+│   │   └── output/
+│   ├── screenshots/
+│   └── utils.py
 ├── src/
+│   ├── __init__.py
+│   ├── analysis_cam.py
 │   ├── data_loader.py
 │   ├── gradcam.py
+│   ├── losses.py
 │   ├── model.py
 │   └── train.py
 ├── tests/
 ├── notebooks/
+│   ├── docs/
+│   ├── reports/
+│   └── *.ipynb
 ├── reports/
+├── data/
 ├── saved_models/
-├── requirements.txt
+├── static/
+│   └── output/
+├── utility/
+│   └── subset_rsna.py
 ├── Dockerfile
-└── .github/workflows/ci.yml
+├── requirements.txt
+├── environment.yml
+├── pytest.ini
+├── README.md
+└── LICENSE
 ```
 
 ## Known Constraints

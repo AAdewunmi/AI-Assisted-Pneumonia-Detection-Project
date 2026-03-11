@@ -1,5 +1,3 @@
-# PneumoDetect: Clinical Decision Support System for Pneumonia Detection
-
 ---
 <!-- CI / Lint / Coverage Badges -->
 [![CI Pipeline](https://github.com/AAdewunmi/AI-Assisted-Pneumonia-Detection-Project/actions/workflows/ci.yml/badge.svg)](https://github.com/AAdewunmi/AI-Assisted-Pneumonia-Detection-Project/actions/workflows/ci.yml)
@@ -11,7 +9,9 @@
 ![Dockerized](https://img.shields.io/badge/Containerized-PneumoDetect-brightgreen)
 ---
 
-Flask + PyTorch clinical AI prototype for pneumonia risk triage from chest X-rays (PNG/JPG/DICOM), with Grad-CAM explainability overlays and CI-backed quality checks.
+# PneumoDetect: Clinical Decision Support System for Pneumonia Detection
+
+Flask + PyTorch is a clinical AI prototype for pneumonia risk triage from chest X-rays (PNG/JPG/DICOM), with Grad-CAM explainability overlays and CI-backed quality checks.
 
 ## Status Snapshot
 

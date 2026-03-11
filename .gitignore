@@ -56,7 +56,7 @@ logs/
 Thumbs.db
 
 # Test and coverage files
-.coverage
+.coverage*
 htmlcov/
 .pytest_cache/
 .tox/

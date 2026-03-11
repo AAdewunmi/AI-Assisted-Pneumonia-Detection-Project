@@ -1,4 +1,3 @@
----
 <!-- CI / Lint / Coverage Badges -->
 [![CI Pipeline](https://github.com/AAdewunmi/AI-Assisted-Pneumonia-Detection-Project/actions/workflows/ci.yml/badge.svg)](https://github.com/AAdewunmi/AI-Assisted-Pneumonia-Detection-Project/actions/workflows/ci.yml)
 [![Code Style: Flake8](https://img.shields.io/badge/code%20style-flake8-3572A5.svg)](https://flake8.pycqa.org/)
@@ -7,7 +6,7 @@
 ![Docker Build](https://img.shields.io/badge/Docker-Build-blue)
 ![Image Size](https://img.shields.io/docker/image-size/_/python?label=Base%20Image)
 ![Dockerized](https://img.shields.io/badge/Containerized-PneumoDetect-brightgreen)
----
+
 
 # PneumoDetect: Clinical Decision Support System for Pneumonia Detection
 

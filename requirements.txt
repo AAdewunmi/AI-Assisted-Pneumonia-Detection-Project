@@ -11,7 +11,7 @@ matplotlib==3.9.2
 seaborn==0.13.2
 opencv-python==4.10.0.84
 Pillow==12.1.1
-pydicom==2.4.4
+pydicom==2.4.5
 
 # Machine learning (CPU default; platform-aware pins)
 # - macOS x86_64 wheels stop at torch 2.2.x; arm64/Linux can use 2.3.x+

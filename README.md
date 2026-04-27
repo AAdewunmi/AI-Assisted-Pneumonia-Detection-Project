@@ -87,12 +87,17 @@ Flask + PyTorch is a clinical AI prototype for pneumonia risk triage from chest 
 git clone https://github.com/AAdewunmi/AI-Assisted-Pneumonia-Detection-Project.git
 cd AI-Assisted-Pneumonia-Detection-Project
 
-python -m venv .venv
+python3.11 -m venv .venv
 source .venv/bin/activate  # Windows: .venv\Scripts\activate
 
+python --version  # should print Python 3.11.x
 pip install --upgrade pip
 pip install -r requirements.txt
 ```
+
+If `pip install -r requirements.txt` reports that `torch==2.2.2` has no
+matching distribution, recreate the virtual environment with Python 3.11.
+Python 3.13 is not supported by the pinned PyTorch stack on macOS x86_64.
 
 ### Run the app
 

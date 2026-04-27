@@ -1,6 +1,9 @@
 # ---------------------------------------------
 # PneumoDetect Requirements (Cross-platform)
 # ---------------------------------------------
+#
+# Tested with Python 3.11. PyTorch wheels for the pinned macOS x86_64
+# versions are not available for Python 3.13.
 
 # Core scientific stack
 numpy==1.26.4

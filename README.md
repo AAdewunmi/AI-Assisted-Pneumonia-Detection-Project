@@ -35,6 +35,10 @@ Flask + PyTorch is a clinical AI prototype for pneumonia risk triage from chest 
 - Optionally generates and displays Grad-CAM heatmaps for model transparency.
 - Exposes a health endpoint for deployment checks.
 
+## Screenshot Walkthrough
+
+<img width="800" height="376" alt="Image" src="https://github.com/user-attachments/assets/af0014fd-e78c-4007-bf48-3ef22c51a6bb" />
+
 ## Tech Stack
 
 - Language/runtime: Python 3.11

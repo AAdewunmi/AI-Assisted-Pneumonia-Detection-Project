@@ -18,7 +18,7 @@ pydicom==2.4.5
 
 # Machine learning (CPU default; platform-aware pins)
 # - macOS x86_64 wheels stop at torch 2.2.x; arm64/Linux can use 2.3.x+
-torch==2.12.0; platform_system == "Darwin" and platform_machine == "x86_64"
+torch==2.13.0; platform_system == "Darwin" and platform_machine == "x86_64"
 torchvision==0.17.2; platform_system == "Darwin" and platform_machine == "x86_64"
 torch>=2.3.0,<2.5.0; platform_system != "Darwin" or platform_machine != "x86_64"
 torchvision>=0.18.0,<0.20.0; platform_system != "Darwin" or platform_machine != "x86_64"
